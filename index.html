@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analítico Interativo | SWIFT</title>
+                <link rel="icon" href="swift.ico" type="image/png">
+
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --swift-orange-1: #FF6600; --swift-orange-2: #FF8533;
+            --gray-900: #1a1a1a; --gray-700: #3f3f3f; --gray-500: #808080;
+            --gray-300: #d9d9d9; --gray-100: #f0f2f5; --white: #ffffff;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-md: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius-md: 16px; --transition-speed: 0.3s ease;
+            --font-family-base: 'Poppins', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
+        body {
+            font-family: var(--font-family-base); background-color: var(--gray-100);
+            color: var(--gray-900); display: flex; height: 100vh; overflow: hidden;
+        }
+        .sidebar {
+            width: 300px; background-color: var(--white); border-right: 1px solid var(--gray-300);
+            padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2.5rem;
+        }
+        .sidebar-header i { font-size: 2rem; color: var(--swift-orange-1); }
+        .sidebar-header h1 { font-size: 1.5rem; font-weight: 700; }
+        .sidebar-header h1 span { font-weight: 400; color: var(--gray-500); }
+        .filter-group { margin-bottom: 1.25rem; }
+        .filter-group label {
+            display: flex; align-items: center; gap: 0.65rem; font-weight: 600;
+            margin-bottom: 0.5rem; font-size: 0.9rem;
+        }
+        .filter-group label i { color: var(--swift-orange-2); font-size: 1.1em; width: 1.2em; text-align: center; }
+        .filter-group select, .filter-group input {
+            width: 100%; padding: 0.6rem; border: 1px solid var(--gray-300);
+            border-radius: 8px; background-color: #fdfdfd; font-size: 0.9rem;
+            font-family: var(--font-family-base); transition: all var(--transition-speed);
+        }
+        select[multiple] { height: 100px; padding: 0.5rem; }
+        select[multiple] option { padding: 0.3rem 0.5rem; border-radius: 4px; }
+        select[multiple] option:checked { background-color: var(--swift-orange-2); color: white; }
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none; border-color: var(--swift-orange-2);
+            box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
+        }
+        #reset-filters {
+            width: 100%; padding: 0.75rem; margin-top: auto; background-color: var(--swift-orange-1);
+            color: var(--white); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: background-color var(--transition-speed); display: flex;
+            align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        #reset-filters:hover { background-color: var(--swift-orange-2); }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        header {
+            padding: 1rem 2rem; background-color: var(--white); border-bottom: 1px solid var(--gray-300);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .tab-button {
+            padding: 0.75rem 1.5rem; border: none; background-color: transparent; cursor: pointer;
+            font-size: 1rem; font-weight: 500; color: var(--gray-500); border-bottom: 3px solid transparent;
+            transition: all var(--transition-speed); display: flex; align-items: center; gap: 0.5rem;
+        }
+        .tab-button:hover { color: var(--gray-900); }
+        .tab-button.active { color: var(--swift-orange-1); border-bottom-color: var(--swift-orange-1); font-weight: 600; }
+        .tab-content { display: none; padding: 2rem; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .grid-container { display: grid; gap: 1.5rem; }
+        .card {
+            background-color: var(--white); border-radius: var(--border-radius-md); box-shadow: var(--shadow-sm);
+            padding: 2rem; transition: all var(--transition-speed); display: flex; flex-direction: column;
+            border-top: 4px solid var(--swift-orange-1);
+        }
+        .card:hover { box-shadow: var(--shadow-md); transform: translateY(-8px); }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-shrink: 0;
+        }
+        .card-header h3 { display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; font-weight: 600; }
+        .card-header h3 i { color: var(--swift-orange-1); }
+        .chart-container { flex-grow: 1; min-height: 350px; }
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;}
+        .kpi-card {
+            flex-direction: row; align-items: center; gap: 1.5rem; padding: 1.25rem;
+            border-top: 4px solid var(--swift-orange-2);
+        }
+        .kpi-card .icon {
+            font-size: 1.8rem; background-image: linear-gradient(145deg, var(--swift-orange-1), var(--swift-orange-2));
+            color: white; width: 60px; height: 60px; display: grid; place-items: center;
+            border-radius: 50%; flex-shrink: 0;
+        }
+        .kpi-card .value { font-size: 2rem; font-weight: 700; }
+        .kpi-card .label { font-size: 0.9rem; font-weight: 500; color: var(--gray-500); }
+        
+        #visao-geral-grid { grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(350px, auto); }
+        #temporal-lojas-grid, #analise-topicos-grid, #analise-bigramas-grid {
+            grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(450px, auto);
+        }
+        
+        /* ========================================= */
+        /* Estilos do Card de IA                     */
+        /* ========================================= */
+        #ia-summary-card {
+            grid-column: 3 / 5; justify-content: center; align-items: center; text-align: center;
+            border-top-color: #8E44AD;
+            cursor: pointer;
+        }
+        #ia-summary-card.has-convo #ia-summary-default {
+            display: none;
+        }
+        #ia-summary-preview {
+            display: none; /* Escondido por padrão */
+            text-align: left;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        #ia-summary-card.has-convo #ia-summary-preview {
+            display: block;
+        }
+        #ia-summary-preview h4 {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #8E44AD;
+        }
+        #ia-summary-preview-content {
+            background-color: var(--gray-100);
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 150px;
+            overflow-y: auto;
+            color: var(--gray-700);
+            border-left: 4px solid var(--swift-orange-1);
+        }
+        #ia-summary-preview-content p {
+            margin: 0;
+            line-height: 1.5;
+        }
+        #ia-summary-preview-content strong {
+           color: var(--gray-900);
+        }
+
+        #ia-button {
+            background-image: linear-gradient(45deg, #8E44AD, #9B59B6); color: white; border: none;
+            padding: 0.8rem 2rem; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer;
+            transition: all var(--transition-speed); display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem;
+        }
+        #ia-button:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        #ia-button i { animation: sparkle 1.5s infinite; }
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1); color: #f1c40f; }
+            50% { transform: scale(1.3); color: #f8e71c; }
+        }
+
+        #welcome-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; animation: fadeInOverlay 0.5s forwards;
+        }
+        @keyframes fadeInOverlay { to { opacity: 1; } }
+        #welcome-popup {
+            background: var(--white); border-radius: 16px;
+            padding: 3rem 4rem; text-align: center; max-width: 600px;
+            box-shadow: var(--shadow-md); transform: scale(0.9) translateY(20px);
+            animation: popIn 0.5s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0;
+        }
+        @keyframes popIn { to { transform: scale(1) translateY(0); opacity: 1; } }
+        
+        #welcome-popup h2 { font-size: 2.5rem; font-weight: 700; color: var(--swift-orange-1); margin-bottom: 0.5rem; }
+        #welcome-popup .creators {
+            margin: 2.5rem 0; display: flex; justify-content: center; align-items: center; gap: 3rem;
+        }
+        .creator-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+        .creator-profile img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--swift-orange-2); }
+        .creator-profile span { font-weight: 600; font-size: 1.1rem; }
+        #welcome-popup p { color: var(--gray-700); font-size: 1.1rem; margin-bottom: 2.5rem; }
+        #start-button {
+            background-color: var(--swift-orange-1); color: var(--white); border: none;
+            padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 600;
+            border-radius: 8px; cursor: pointer; transition: all var(--transition-speed);
+        }
+        #start-button:hover { background-color: var(--swift-orange-2); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .loader-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center;
+            z-index: 9999; flex-direction: column; gap: 1rem; font-family: var(--font-family-base);
+        }
+        .loader {
+            border: 8px solid var(--gray-300); border-top: 8px solid var(--swift-orange-1);
+            border-radius: 50%; width: 80px; height: 80px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .table-container { overflow-x: auto; }
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .custom-table th, .custom-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--gray-100); }
+        .custom-table thead th { background-color: var(--gray-100); font-weight: 600; }
+        .custom-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        .custom-table tbody tr:hover { background-color: #e9ecef; }
+        .custom-table .comment-cell { min-width: 300px; max-width: 500px; white-space: normal; }
+
+        .toggle-switch { display: flex; background-color: var(--gray-100); border-radius: 8px; padding: 4px; }
+        .toggle-switch button {
+            background-color: transparent; border: none; padding: 0.5rem 1rem;
+            cursor: pointer; font-family: var(--font-family-base); font-size: 0.9rem; font-weight: 500;
+            color: var(--gray-500); border-radius: 6px; transition: all var(--transition-speed);
+        }
+        .toggle-switch button.active {
+            background-color: var(--white); color: var(--swift-orange-1); font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+
+        /* ========================================= */
+        /* Estilos: Modal de IA (Chatbot)            */
+        /* ========================================= */
+        #ia-chat-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2000;
+            display: none;
+        }
+        #ia-chat-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+        #ia-chat-container {
+            position: relative;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1000px;
+            height: 85vh;
+            background: var(--gray-100);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #ia-chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-300);
+            flex-shrink: 0;
+            background-color: var(--white);
+        }
+        #ia-chat-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #8E44AD;
+        }
+        #ia-chat-header h3 i {
+            font-size: 1.2rem;
+        }
+        #ia-chat-close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--gray-500);
+            cursor: pointer;
+        }
+        #ia-chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            max-width: 85%;
+        }
+        .chat-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            color: var(--white);
+        }
+        .chat-content {
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            /* REMOVIDO: white-space: pre-wrap; */
+        }
+        
+        /* Mensagem do Usuário (Direita) */
+        .chat-message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .chat-message.user .chat-icon {
+            background-color: var(--swift-orange-1);
+        }
+        .chat-message.user .chat-content {
+            background-color: var(--swift-orange-1);
+            color: var(--white);
+            border-bottom-right-radius: 0;
+        }
+        .chat-message.user .chat-content strong {
+            color: var(--white);
+            text-decoration: underline;
+        }
+
+        /* Mensagem do Assistente (Esquerda) */
+        .chat-message.assistant {
+            align-self: flex-start;
+        }
+        .chat-message.assistant .chat-icon {
+            background-color: #8E44AD;
+        }
+        .chat-message.assistant .chat-content {
+            background-color: var(--white);
+            color: var(--gray-900);
+            border-bottom-left-radius: 0;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .chat-message.loading {
+            align-self: flex-start;
+        }
+        .chat-message.loading .chat-content {
+            background-color: var(--white);
+            color: var(--gray-700);
+        }
+        .chat-message.loading .chat-content::after {
+            content: '...';
+            display: inline-block;
+            animation: bounce 1s linear infinite;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+        /* NOVO: Estilos para Markdown (Tabelas, Listas, etc.) */
+        .chat-content p {
+            margin: 0 0 0.5rem 0;
+        }
+        .chat-content p:last-child {
+            margin-bottom: 0;
+        }
+        .chat-content strong {
+            color: var(--swift-orange-1);
+        }
+        .chat-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            background-color: var(--gray-100);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+        .chat-content th, .chat-content td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-300);
+        }
+        .chat-content th {
+            background-color: var(--gray-300);
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+        .chat-content tr:last-child td {
+            border-bottom: none;
+        }
+        .chat-content ul, .chat-content ol {
+            margin: 0.5rem 0 1rem 1.5rem; /* Ajustado para caber na bolha */
+            padding-left: 1rem;
+        }
+        .chat-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        /* Estilos das Sugestões Rápidas */
+        #ia-chat-quick-replies {
+            padding: 1rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--gray-300);
+            flex-shrink: 0;
+            background-color: var(--white);
+        }
+        #ia-chat-quick-replies button {
+            background-color: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        #ia-chat-quick-replies button:hover {
+            background-color: var(--swift-orange-2);
+            color: var(--white);
+            border-color: var(--swift-orange-1);
+        }
+        
+        #ia-chat-input-area {
+            display: flex;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--gray-300);
+            gap: 0.75rem;
+            flex-shrink: 0;
+            background-color: var(--white);
+        }
+        #ia-chat-input {
+            flex-grow: 1;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-family: var(--font-family-base);
+        }
+        #ia-chat-input:focus {
+            outline: none;
+            border-color: var(--swift-orange-2);
+            box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
+        }
+        #ia-chat-send-btn {
+            background-color: var(--swift-orange-1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+            flex-shrink: 0;
+        }
+        #ia-chat-send-btn:hover {
+            background-color: var(--swift-orange-2);
+        }
+
+        /* ========================================= */
+        /* MEDIA QUERIES RESPONSIVAS                 */
+        /* ========================================= */
+
+        .header-controls {
+            display: none;
+            margin-right: auto;
+        }
+        #burger-menu-btn {
+            font-size: 1.5rem;
+            color: var(--gray-700);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            .kpi-row {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            #visao-geral-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-auto-rows: minmax(300px, auto);
+            }
+            #ia-summary-card {
+                grid-column: 1 / -1;
+            }
+            #temporal-lojas-grid, #analise-topicos-grid, #analise-bigramas-grid {
+                grid-template-columns: 1fr;
+                grid-auto-rows: minmax(300px, auto);
+            }
+            #analise-bigramas-grid {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            .tab-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+            #ia-chat-container {
+                width: 90%;
+                height: 85vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+            
+            .header-controls {
+                display: block;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 300px;
+                height: 100vh;
+                z-index: 1001;
+                transform: translateX(-100%);
+                transition: transform var(--transition-speed);
+                box-shadow: var(--shadow-md);
+            }
+            .sidebar.visible {
+                transform: translateX(0);
+            }
+            
+            #sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+                display: none;
+            }
+            
+            .main-content {
+                width: 100%;
+                overflow-y: visible;
+            }
+            
+            header {
+                padding: 1rem;
+                display: flex;
+                align-items: center;
+            }
+            .tabs {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: nowrap; 
+                overflow-x: auto; 
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .tabs::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .tab-content { padding: 1rem; }
+            
+            .grid-container {
+                grid-template-columns: 1fr !important;
+            }
+            .card {
+                grid-column: 1 / -1 !important;
+                padding: 1.25rem;
+            }
+            
+            .kpi-row {
+                grid-template-columns: 1fr;
+            }
+            .kpi-card {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            #welcome-popup {
+                width: 95vw;
+                padding: 2rem 1.5rem;
+            }
+            #welcome-popup h2 { font-size: 1.8rem; }
+            .creators { flex-direction: column; gap: 1rem; }
+            
+            #ia-chat-container {
+                width: 100vw;
+                height: 100vh;
+                max-width: 100vw;
+                border-radius: 0;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            .custom-table .comment-cell {
+                min-width: 250px;
+            }
+            #ia-chat-messages {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            .chat-message {
+                max-width: 90%;
+            }
+            .chat-content {
+                padding: 0.6rem 1rem;
+            }
+            #ia-chat-quick-replies {
+                padding: 0.75rem;
+            }
+            #ia-chat-input-area {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="welcome-overlay">
+        <div id="welcome-popup">
+            <h2>Bem-vindo ao SwiftAnalytics</h2>
+            <p>Um dashboard interativo de análise de dados.</p>
+            <div class="creators">
+                <div class="creator-profile">
+                    <img src="eduardo.jpg" alt="Foto Eduardo">
+                    <span>Eduardo</span>
+                </div>
+                <div class="creator-profile">
+                    <img src="fujita.jpg" alt="Foto Fujita">
+                    <span>Fujita</span>
+                </div>
+            </div>
+            <button id="start-button">Quero conhecer o projeto</button>
+        </div>
+    </div>
+
+    <div class="loader-container" id="loader">
+        <div class="loader"></div> <p>Carregando dados e construindo dashboard...</p>
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-chart-simple"></i>
+            <h1>SWIFT<span>Analytics</span></h1>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--gray-500); margin-top: -2rem; margin-bottom: 1rem;">Use <b>Ctrl+Click</b> para selecionar múltiplos filtros.</p>
+
+        <div class="filter-group">
+            <label for="date-start"><i class="fas fa-calendar-alt"></i> <span>Data Início</span></label>
+            <input type="date" id="date-start">
+        </div>
+        <div class="filter-group">
+            <label for="date-end"><i class="fas fa-calendar-alt"></i> <span>Data Fim</span></label>
+            <input type="date" id="date-end">
+        </div>
+        <div class="filter-group">
+            <label for="filtro-centro"><i class="fas fa-store"></i> <span>Centro (Loja)</span></label>
+            <select id="filtro-centro" multiple></select>
+        </div>
+        <div class="filter-group">
+            <label for="filtro-classificacao"><i class="fas fa-tags"></i> <span>Classificação</span></label>
+            <select id="filtro-classificacao" multiple></select>
+        </div>
+        <div class="filter-group">
+            <label for="filtro-sentimento"><i class="fas fa-smile-beam"></i> <span>Sentimento</span></label>
+            <select id="filtro-sentimento" multiple></select>
+        </div>
+        
+        <button id="reset-filters"><i class="fas fa-rotate-right"></i> Limpar Filtros</button>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <div class="header-controls">
+                <button id="burger-menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+            
+            <nav class="tabs">
+                <button class="tab-button active" data-tab="tab-1"><i class="fas fa-chart-pie"></i> Visão Geral</button>
+                <button class="tab-button" data-tab="tab-2"><i class="fas fa-chart-line"></i> Temporal e Lojas</button>
+                <button class="tab-button" data-tab="tab-3"><i class="fas fa-comment-dots"></i> Análise de Tópicos</button>
+                <button class="tab-button" data-tab="tab-4"><i class="fas fa-spell-check"></i> Análise de Bigramas</button>
+                <button class="tab-button" data-tab="tab-5"><i class="fas fa-triangle-exclamation"></i> Alarmantes</button>
+                <button class="tab-button" data-tab="tab-6"><i class="fas fa-award"></i> Gratificações</button>
+            </nav>
+        </header>
+
+        <section id="tab-1" class="tab-content active">
+            <div class="kpi-row">
+                 <div class="card kpi-card">
+                    <div class="icon"><i class="fas fa-comments"></i></div>
+                    <div><div id="kpi-total-value" class="value">0</div><div class="label">Total de Comentários</div></div>
+                </div>
+                 <div class="card kpi-card">
+                    <div class="icon"><i class="fas fa-rocket"></i></div>
+                    <div><div id="kpi-nps-value" class="value">0</div><div class="label">NPS Score</div></div>
+                </div>
+                 <div class="card kpi-card">
+                    <div class="icon"><i class="fas fa-user-check"></i></div>
+                    <div><div id="kpi-promotores" class="value">0</div><div class="label">Total Promotores</div></div>
+                </div>
+                 <div class="card kpi-card">
+                    <div class="icon"><i class="fas fa-user-times"></i></div>
+                    <div><div id="kpi-detratores" class="value">0</div><div class="label">Total Detratores</div></div>
+                </div>
+            </div>
+             <div id="visao-geral-grid" class="grid-container">
+                <div class="card" style="grid-column: 1 / 3"><div class="card-header"><h3><i class="fas fa-tags"></i>Classificação</h3></div><div id="pie-classificacao" class="chart-container"></div></div>
+                <div class="card" style="grid-column: 3 / 5"><div class="card-header"><h3><i class="fas fa-smile"></i>Sentimento</h3></div><div id="pie-sentimento" class="chart-container"></div></div>
+                <div class="card" style="grid-column: 1 / 3;"><div class="card-header"><h3><i class="fas fa-layer-group"></i>Sentimento vs. Classificação</h3></div><div id="bar-sentimento-classificacao" class="chart-container"></div></div>
+                
+                <div id="ia-summary-card" class="card">
+                    <div id="ia-summary-default">
+                        <h3>Gerar Sumário com IA</h3>
+                        <p>Clique para obter insights automáticos sobre os dados filtrados.</p>
+                        <button id="ia-button"><i class="fas fa-wand-magic-sparkles"></i>Gerar Insights</button>
+                    </div>
+                    <div id="ia-summary-preview">
+                        <h4><i class="fas fa-comment-dots"></i> Sua conversa com a IA</h4>
+                        <div id="ia-summary-preview-content">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="tab-2" class="tab-content">
+            <div id="temporal-lojas-grid" class="grid-container">
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i>NPS ao Longo do Tempo</h3>
+                        <div class="local-filters">
+                            <select id="seletor-agrupamento-temporal"><option value="D">Dia</option><option value="W">Semana</option><option value="M" selected>Mês</option></select>
+                        </div>
+                    </div>
+                    <div id="grafico-linha-nps" class="chart-container"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-store"></i>NPS Score por Loja</h3></div>
+                    <div id="grafico-coluna-nps-loja" class="chart-container"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-store-alt"></i>Sentimento por Loja</h3></div>
+                    <div id="sentimento-por-loja" class="chart-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-3" class="tab-content">
+             <div class="kpi-row">
+                 <div class="card kpi-card">
+                    <div class="icon"><i class="fas fa-lightbulb"></i></div>
+                    <div><div id="kpi-top-topic" class="value">-</div><div class="label">Tópico Mais Frequente</div></div>
+                </div>
+            </div>
+            <div id="analise-topicos-grid" class="grid-container">
+                 <div class="card" style="grid-column: 1 / -1">
+                    <div class="card-header">
+                        <h3><i class="fas fa-list-ol"></i>Maiores Tópicos por Frequência</h3>
+                    </div>
+                    <div id="bar-topicos" class="chart-container"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-thumbs-up"></i>Top 5 Tópicos Positivos</h3></div>
+                    <div id="top-topicos-positivos" class="chart-container"></div>
+                </div>
+                 <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-thumbs-down"></i>Top 5 Tópicos Negativos</h3></div>
+                    <div id="top-topicos-negativos" class="chart-container"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-4" class="tab-content">
+             <div class="kpi-row">
+                 <div class="card kpi-card">
+                    <div class="icon"><i class="fas fa-quote-right"></i></div>
+                    <div><div id="kpi-top-bigram" class="value">-</div><div class="label">Bigrama Mais Frequente</div></div>
+                </div>
+            </div>
+            <div class="card" style="margin-bottom: 1.5rem; padding: 1rem 2rem; flex-direction: row; justify-content: space-between; align-items: center; border-top: none;">
+                <h4 style="font-weight: 600;">Visualizar Bigramas por:</h4>
+                <div id="bigram-toggle" class="toggle-switch">
+                    <button data-metric="Frequencia" class="active">Frequência</button>
+                    <button data-metric="Score_TFIDF">Score de Impacto</button>
+                </div>
+            </div>
+            <div id="analise-bigramas-grid" class="grid-container" style="grid-template-columns: repeat(3, 1fr);">
+                 <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-user-check"></i>Top 10 (Promotores)</h3></div>
+                    <div id="bigramas-promotores" class="chart-container"></div>
+                </div>
+                 <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-user-meh"></i>Top 10 (Neutros)</h3></div>
+                    <div id="bigramas-neutros" class="chart-container"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-user-times"></i>Top 10 (Detratores)</h3></div>
+                    <div id="bigramas-detratores" class="chart-container"></div>
+                </div>
+                 <div id="bigramas-por-score-card" class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header"><h3><i class="fas fa-sort-amount-up"></i>Bigramas por Métrica</h3></div>
+                    <div id="bigramas-por-score" class="chart-container"></div>
+                 </div>
+            </div>
+        </section>
+        
+        <section id="tab-5" class="tab-content">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-triangle-exclamation"></i>Top 5 Comentários Alarmantes (Detratores & Negativos)</h3></div>
+                <div id="alarmantes-table-container" class="table-container"></div>
+            </div>
+        </section>
+        
+        <section id="tab-6" class="tab-content">
+             <div class="card">
+                <div class="card-header"><h3><i class="fas fa-award"></i>Top 5 Comentários Gratificantes (Promotores & Positivos)</h3></div>
+                <div id="gratificacoes-table-container" class="table-container"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="ia-chat-modal" style="display: none;">
+        <div id="ia-chat-overlay"></div>
+        <div id="ia-chat-container">
+            <div id="ia-chat-header">
+                <h3><i class="fas fa-robot"></i> Swift Analytics IA</h3>
+                <button id="ia-chat-close-btn">&times;</button>
+            </div>
+            <div id="ia-chat-messages">
+                </div>
+            <div id="ia-chat-quick-replies">
+                <button data-prompt="Me dê um plano de ação para estes dados.">Plano de Ação</button>
+                <button data-prompt="Quais são as principais dores ou fraquezas?">Principais Dores</button>
+                <button data-prompt="Quais os principais pontos positivos?">Pontos Positivos</button>
+            </div>
+            <div id="ia-chat-input-area">
+                <input type="text" id="ia-chat-input" placeholder="Faça uma pergunta sobre os dados...">
+                <button id="ia-chat-send-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="sidebar-overlay" style="display: none;"></div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const URL_PRINCIPAL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRBNwjlXEqi8I-DyPIlnoIhl_q_CAKnmncKMNzRZZNDYDfJ5Rb66MwqcGswfd9GOW8cpnD9c9Ah-0I9/pub?gid=0&single=true&output=csv';
+        const URL_BIGRAMAS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRBNwjlXEqi8I-DyPIlnoIhl_q_CAKnmncKMNzRZZNDYDfJ5Rb66MwqcGswfd9GOW8cpnD9c9Ah-0I9/pub?gid=1364274335&single=true&output=csv';
+        
+        const PALETA_CORES_SWIFT = ['#FF6600', '#FF8533', '#FFA500', '#FFC04D', '#FFDAB9'];
+
+        const COLOR_MAP = {
+            'Sentimento': { 'Positivo': '#a3d6a3', 'Neutro': '#aec6cf', 'Negativo': '#ff9999' },
+            'Classificacao': { 'promotor': '#a3d6a3', 'neutro': '#aec6cf', 'detrator': '#ff9999' }
+        };
+        const ORDER = {
+            'Sentimento': ['Positivo', 'Neutro', 'Negativo'],
+            'Classificacao': ['promotor', 'neutro', 'detrator']
+        };
+        const PLOTLY_CONFIG = { displaylogo: false, responsive: true };
+        const PLOTLY_LAYOUT_BASE = {
+            font: { family: 'Poppins, sans-serif', size: 12, color: '#3f3f3f' },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            margin: { t: 50, b: 50, l: 60, r: 20 }, autosize: true,
+            hoverlabel: { bgcolor: "#ffffff", font: { color: '#000000', family: 'Poppins, sans-serif', size: 13 }, bordercolor: '#d9d9d9' },
+            legend: { orientation: 'h', yanchor: 'bottom', y: 1.02, xanchor: 'right', x: 1 }
+        };
+        let mainData = [], bigramData = [], allFilterIds = [];
+
+        async function initializeDashboard() {
+            const overlay = document.getElementById('welcome-overlay');
+            document.getElementById('start-button').addEventListener('click', () => {
+                overlay.style.transition = 'opacity 0.5s';
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 500);
+            });
+            
+            try {
+                const [mainResult, bigramResult] = await Promise.all([ parseCSV(URL_PRINCIPAL), parseCSV(URL_BIGRAMAS) ]);
+                processData(mainResult.data, bigramResult.data);
+                
+                const dateObjects = mainData.map(d => d.Data).filter(d => d instanceof Date && !isNaN(d));
+                if (dateObjects.length > 0) {
+                    const dates = dateObjects.map(d => d.getTime());
+                    document.getElementById('date-start').value = new Date(Math.min(...dates)).toISOString().split('T')[0];
+                    document.getElementById('date-end').value = new Date(Math.max(...dates)).toISOString().split('T')[0];
+                }
+
+                populateFilters();
+                addEventListeners();
+                updateDashboard();
+
+            } catch (error) {
+                console.error("Erro ao inicializar o dashboard:", error);
+                document.getElementById('loader').innerHTML = 'Falha ao carregar dados. Por favor, recarregue a página.';
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+        function parseCSV(source, isString = false) {
+            return new Promise((resolve, reject) => {
+                const config = { header: true, skipEmptyLines: true, complete: resolve, error: reject };
+                if (!isString) config.download = true;
+                Papa.parse(source, config);
+            });
+        }
+        
+       function processData(main, bigrams) {
+            mainData = main.filter(row => row.sentimento_modelo && row.sentimento_modelo !== 'Sem Comentário').map(row => ({
+                ...row, Data: new Date(row['Data Avaliação']), NPS: parseInt(row['NPS'], 10)
+            }));
+            bigramData = bigrams.map(row => ({
+                'Centro': row['Centro'],
+                'Bigrama': row['Bigrama'],
+                'Classificacao': row['Classificacao'],
+                'Score_TFIDF': parseFloat(row['Score_TFIDF']),
+                'Frequencia': parseInt(row['Frequencia'], 10)
+            })).filter(d => d.Classificacao);
+        }
+
+        function populateFilters() {
+            const unique = (arr) => [...new Set(arr)].filter(Boolean).sort();
+            const centros = unique(mainData.map(d => d.Centro));
+            const classificacoes = unique(mainData.map(d => d.classificacao));
+            const sentimentos = unique(mainData.map(d => d.sentimento_modelo));
+            
+            populateSelect('filtro-centro', centros);
+            populateSelect('filtro-classificacao', classificacoes);
+            populateSelect('filtro-sentimento', sentimentos);
+            
+            allFilterIds.push('filtro-centro', 'filtro-classificacao', 'filtro-sentimento');
+        }
+        
+        function populateSelect(elementId, options) {
+            const select = document.getElementById(elementId);
+            select.innerHTML = '';
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option; opt.textContent = option;
+                select.appendChild(opt);
+            });
+        }
+        
+        function addEventListeners() {
+            allFilterIds.push('date-start', 'date-end', 'seletor-agrupamento-temporal');
+            allFilterIds.forEach(id => document.getElementById(id)?.addEventListener('change', updateDashboard));
+            
+            document.getElementById('reset-filters').addEventListener('click', () => {
+                allFilterIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el?.tagName === 'SELECT') {
+                        if (el.multiple) Array.from(el.options).forEach(opt => opt.selected = false);
+                        else el.selectedIndex = 0;
+                    }
+                });
+                const dateObjects = mainData.map(d => d.Data).filter(d => d instanceof Date && !isNaN(d));
+                if (dateObjects.length > 0) {
+                    const dates = dateObjects.map(d => d.getTime());
+                    document.getElementById('date-start').value = new Date(Math.min(...dates)).toISOString().split('T')[0];
+                    document.getElementById('date-end').value = new Date(Math.max(...dates)).toISOString().split('T')[0];
+                }
+                updateDashboard();
+            });
+            
+            document.querySelectorAll('.tab-button').forEach(button => button.addEventListener('click', (e) => switchTab(e.currentTarget)));
+            
+            document.querySelectorAll('#bigram-toggle button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    document.querySelectorAll('#bigram-toggle button').forEach(btn => btn.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    updateDashboard();
+                });
+            });
+
+            addChatbotEventListeners();
+            addResponsiveEventListeners();
+        }
+        
+        const getSelectedValues = (id) => Array.from(document.getElementById(id).selectedOptions).map(o => o.value);
+        
+        function switchTab(clickedButton) {
+            document.querySelectorAll('.tab-button, .tab-content').forEach(el => el.classList.remove('active'));
+            clickedButton.classList.add('active');
+            document.getElementById(clickedButton.dataset.tab).classList.add('active');
+            updateDashboard(); 
+        }
+
+        function updateDashboard() {
+            const filters = getCurrentFilters();
+            const { filtered_main, filtered_bigrams } = filtrarDados(filters);
+            const activeTabId = document.querySelector('.tab-content.active')?.id;
+            
+            conversationHistory = [];
+            renderSummaryPreview(); 
+            
+            if (!activeTabId) return;
+            if (activeTabId === 'tab-1') plotarAba1(filtered_main);
+            if (activeTabId === 'tab-2') plotarAba2(filtered_main);
+            if (activeTabId === 'tab-3') plotarAba3(filtered_main);
+            if (activeTabId === 'tab-4') plotarAba4(filtered_bigrams);
+            if (activeTabId === 'tab-5') plotarAba5(filtered_main);
+            if (activeTabId === 'tab-6') plotarAba6(filtered_main);
+        }
+
+        function getCurrentFilters() {
+            return {
+                start: new Date(document.getElementById('date-start').value), 
+                end: new Date(document.getElementById('date-end').value),
+                centros: getSelectedValues('filtro-centro'), 
+                classificacoes: getSelectedValues('filtro-classificacao'),
+                sentimentos: getSelectedValues('filtro-sentimento'),
+            };
+        }
+        
+       function filtrarDados(filters) {
+            const endDate = new Date(filters.end); endDate.setDate(endDate.getDate() + 1);
+            
+            const filtered_main = mainData.filter(d => 
+                d.Data >= filters.start && d.Data < endDate &&
+                (filters.centros.length === 0 || filters.centros.includes(d.Centro)) &&
+                (filters.classificacoes.length === 0 || filters.classificacoes.includes(d.classificacao)) &&
+                (filters.sentimentos.length === 0 || filters.sentimentos.includes(d.sentimento_modelo))
+            );
+
+            const normalizedCentros = filters.centros.map(c => c.split('-')[0].trim());
+
+            const filtered_bigrams = bigramData.filter(d => {
+                const bigramCentroId = d.Centro ? String(d.Centro).split('-')[0].trim() : '';
+                return (normalizedCentros.length === 0 || normalizedCentros.includes(bigramCentroId)) &&
+                       (filters.classificacoes.length === 0 || filters.classificacoes.includes(d.Classificacao));
+            });
+
+            return { filtered_main, filtered_bigrams };
+        }
+
+
+        const getColorsForLabels = (labels, group) => labels.map(label => COLOR_MAP[group][label] || '#cccccc');
+        const sortDataByOrder = (data, order) => Object.entries(data).sort(([a], [b]) => order.indexOf(a) - order.indexOf(b));
+
+        function plotarAba1(data) {
+            document.getElementById('kpi-total-value').textContent = data.length.toLocaleString('pt-BR');
+            document.getElementById('kpi-nps-value').textContent = calcularNPS(data).score;
+            document.getElementById('kpi-promotores').textContent = data.filter(d => d.classificacao === 'promotor').length;
+            document.getElementById('kpi-detratores').textContent = data.filter(d => d.classificacao === 'detrator').length;
+
+            const countBy = (arr, key) => arr.reduce((acc, item) => { if(item[key]) acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
+            
+            const sortedClassif = sortDataByOrder(countBy(data, 'classificacao'), ORDER.Classificacao);
+            Plotly.react('pie-classificacao', [{ labels: sortedClassif.map(d=>d[0]), values: sortedClassif.map(d=>d[1]), type: 'pie', hole: .4, marker: { colors: getColorsForLabels(sortedClassif.map(d=>d[0]), 'Classificacao') }, sort: false, hovertemplate: '<b>%{label}</b><br>%{value} (%{percent})<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE }, PLOTLY_CONFIG);
+            
+            const sortedSent = sortDataByOrder(countBy(data, 'sentimento_modelo'), ORDER.Sentimento);
+            Plotly.react('pie-sentimento', [{ labels: sortedSent.map(d=>d[0]), values: sortedSent.map(d=>d[1]), type: 'pie', hole: .4, marker: { colors: getColorsForLabels(sortedSent.map(d=>d[0]), 'Sentimento') }, sort: false, hovertemplate: '<b>%{label}</b><br>%{value} (%{percent})<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE }, PLOTLY_CONFIG);
+
+            const traces = ORDER.Sentimento.map(sentimento => ({ x: ORDER.Classificacao, y: ORDER.Classificacao.map(c => data.filter(d => d.classificacao === c && d.sentimento_modelo === sentimento).length), name: sentimento, type: 'bar', marker: { color: COLOR_MAP.Sentimento[sentimento] }, hovertemplate: '<b>%{x}</b><br>%{name}: %{y}<extra></extra>' }));
+            Plotly.react('bar-sentimento-classificacao', traces, { ...PLOTLY_LAYOUT_BASE, barmode: 'stack', yaxis: { title: 'Contagem' } }, PLOTLY_CONFIG);
+        }
+        
+        function plotarAba2(data) {
+            const groupBy = document.getElementById('seletor-agrupamento-temporal').value;
+            const temporalData = agregarDadosTemporais(data, groupBy);
+            
+            const npsTraces = [{ x: Object.keys(temporalData), y: Object.values(temporalData).map(d => d.nps), type: 'scatter', mode: 'lines+markers', name: 'NPS', line: { shape: 'spline', color: PALETA_CORES_SWIFT[0], width: 3 }, hovertemplate: '<b>%{x}</b><br>NPS: %{y}<extra></extra>' }];
+            const trendline = calculateLinearRegression(Object.values(temporalData).map(d => d.nps));
+            if (trendline) {
+                npsTraces.push({ x: Object.keys(temporalData), y: Object.keys(temporalData).map((_, i) => trendline.m * i + trendline.b), type: 'scatter', mode: 'lines', name: 'Tendência', line: { color: 'rgba(0,0,0,0.5)', dash: 'dot' }, hoverinfo: 'skip' });
+            }
+            Plotly.react('grafico-linha-nps', npsTraces, { ...PLOTLY_LAYOUT_BASE, title: {text: `NPS Score por ${groupBy === 'D' ? 'Dia' : groupBy === 'W' ? 'Semana' : 'Mês'}`, x: 0.5} }, PLOTLY_CONFIG);
+            
+            const npsPorLoja = data.reduce((acc, d) => { if(d.Centro) { if (!acc[d.Centro]) acc[d.Centro] = []; acc[d.Centro].push(d); } return acc; }, {});
+            const lojas = Object.keys(npsPorLoja).sort();
+            Plotly.react('grafico-coluna-nps-loja', [{ x: lojas, y: lojas.map(loja => calcularNPS(npsPorLoja[loja]).score), type: 'bar', hovertemplate: '<b>%{x}</b><br>NPS: %{y}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { title: 'NPS Score'}, xaxis: { automargin: true } }, PLOTLY_CONFIG);
+
+            const tracesSentimentoLoja = ORDER.Sentimento.map(s => ({ x: lojas, y: lojas.map(l => (npsPorLoja[l] || []).filter(d => d.sentimento_modelo === s).length), name: s, type: 'bar', marker: { color: COLOR_MAP.Sentimento[s] }, hovertemplate: '<b>%{x}</b><br>%{name}: %{y}<extra></extra>' }));
+            Plotly.react('sentimento-por-loja', tracesSentimentoLoja, { ...PLOTLY_LAYOUT_BASE, barmode: 'stack', xaxis: { automargin: true }, yaxis: { title: 'Contagem'} }, PLOTLY_CONFIG);
+        }
+        
+        function plotarAba3(data) {
+            const countBy = (arr, key) => arr.reduce((acc, item) => { if(item[key] && item[key] !=='Nenhum') acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
+            const topicosCounts = countBy(data, 'topico_modelo');
+            const sortedTopicos = Object.entries(topicosCounts).sort(([,a],[,b]) => a - b);
+            document.getElementById('kpi-top-topic').textContent = sortedTopicos.length > 0 ? sortedTopicos[sortedTopicos.length - 1][0] : '-';
+            Plotly.react('bar-topicos', [{ y: sortedTopicos.slice(-15).map(d => d[0]), x: sortedTopicos.slice(-15).map(d => d[1]), type: 'bar', orientation: 'h', marker: { color: PALETA_CORES_SWIFT[0] }, hovertemplate: '<b>%{y}</b><br>Contagem: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true } }, PLOTLY_CONFIG);
+
+            const sortedTopicosPos = Object.entries(countBy(data.filter(d => d.sentimento_modelo === 'Positivo'), 'topico_modelo')).sort(([,a],[,b]) => a - b).slice(-5);
+            Plotly.react('top-topicos-positivos', [{ y: sortedTopicosPos.map(d => d[0]), x: sortedTopicosPos.map(d => d[1]), type: 'bar', orientation: 'h', marker: { color: COLOR_MAP.Sentimento.Positivo }, hovertemplate: '<b>%{y}</b><br>Contagem: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true } }, PLOTLY_CONFIG);
+
+            const sortedTopicosNeg = Object.entries(countBy(data.filter(d => d.sentimento_modelo === 'Negativo'), 'topico_modelo')).sort(([,a],[,b]) => a - b).slice(-5);
+            Plotly.react('top-topicos-negativos', [{ y: sortedTopicosNeg.map(d => d[0]), x: sortedTopicosNeg.map(d => d[1]), type: 'bar', orientation: 'h', marker: { color: COLOR_MAP.Sentimento.Negativo }, hovertemplate: '<b>%{y}</b><br>Contagem: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true } }, PLOTLY_CONFIG);
+        }
+
+       function plotarAba4(data_bigrams) {
+            const metric = document.querySelector('#bigram-toggle .active')?.dataset.metric || 'Frequencia';
+            const metricLabel = metric === 'Frequencia' ? 'Frequência' : 'Score TF-IDF';
+            const hoverFormat = metric === 'Frequencia' ? '%{x}' : '%{x:.2f}';
+
+            const plotTopBigramsByMetric = (classificacao, elementId) => {
+                const filtered = data_bigrams.filter(d => d.Classificacao === classificacao);
+                const sorted = filtered.sort((a,b) => b[metric] - a[metric]).slice(0, 10);
+                Plotly.react(elementId, [{ y: sorted.map(d=>d.Bigrama).reverse(), x: sorted.map(d=>d[metric]).reverse(), type: 'bar', orientation: 'h', marker: { color: COLOR_MAP.Classificacao[classificacao] }, hovertemplate: `<b>%{y}</b><br>${metricLabel}: ${hoverFormat}<extra></extra>` }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis:{title: metricLabel} }, PLOTLY_CONFIG);
+            };
+
+            plotTopBigramsByMetric('promotor', 'bigramas-promotores');
+            plotTopBigramsByMetric('neutro', 'bigramas-neutros');
+            plotTopBigramsByMetric('detrator', 'bigramas-detratores');
+            
+            document.getElementById('kpi-top-bigram').textContent = data_bigrams.length > 0 ? [...data_bigrams].sort((a,b) => b.Frequencia - a.Frequencia)[0].Bigrama : '-';
+            
+            const cardHeader = document.querySelector('#bigramas-por-score-card .card-header h3');
+
+            if (metric === 'Frequencia') {
+                cardHeader.innerHTML = `<i class="fas fa-sort-amount-up"></i>Top 15 Bigramas por Frequência`;
+                const sortedByFreq = [...data_bigrams].sort((a, b) => b.Frequencia - a.Frequencia).slice(0, 15);
+                Plotly.react('bigramas-por-score', [{ y: sortedByFreq.map(d => d.Bigrama).reverse(), x: sortedByFreq.map(d => d.Frequencia).reverse(), type: 'bar', orientation: 'h', marker: { color: PALETA_CORES_SWIFT[1] }, hovertemplate: '<b>%{y}</b><br>Freq: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis: { title: 'Frequência' } }, PLOTLY_CONFIG);
+            } else { // Score_TFIDF
+                cardHeader.innerHTML = `<i class="fas fa-arrows-up-down"></i>Bigramas por Score de Impacto`;
+                const sortedByScore = [...data_bigrams].sort((a,b) => b.Score_TFIDF - a.Score_TFIDF);
+                const top5 = sortedByScore.slice(0, 5);
+                const bottom5 = sortedByScore.slice(-5);
+                const combined = [...top5, ...bottom5].sort((a,b) => b.Score_TFIDF - a.Score_TFIDF);
+                Plotly.react('bigramas-por-score', [{ y: combined.map(d=>d.Bigrama), x: combined.map(d=>d.Score_TFIDF), type: 'bar', orientation: 'h', marker: { color: combined.map(d => d.Score_TFIDF > 0 ? COLOR_MAP.Sentimento.Positivo : COLOR_MAP.Sentimento.Negativo) }, hovertemplate: '<b>%{y}</b><br>Score: %{x:.2f}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis: { title: 'Score TF-IDF Médio' } }, PLOTLY_CONFIG);
+            }
+        }
+
+        function createTable(containerId, data, columns) {
+            const container = document.getElementById(containerId); container.innerHTML = '';
+            const table = document.createElement('table'); table.className = 'custom-table';
+            const thead = table.createTHead(); const headerRow = thead.insertRow();
+            columns.forEach(col => { const th = document.createElement('th'); th.textContent = col.title; headerRow.appendChild(th); });
+            const tbody = table.createTBody();
+            data.forEach(rowData => {
+                const row = tbody.insertRow();
+                columns.forEach(col => {
+                    const cell = row.insertCell();
+                    cell.textContent = col.render ? col.render(rowData[col.key]) : rowData[col.key];
+                    if (col.className) cell.className = col.className;
+                });
+            });
+            container.appendChild(table);
+        }
+
+        function plotarAba5(data) {
+            const alarmantesData = data.filter(d => d.classificacao === 'detrator' && d.sentimento_modelo === 'Negativo' && d.Comentario.length > 100).sort((a, b) => b.Data - a.Data).slice(0, 5);
+            createTable('alarmantes-table-container', alarmantesData, [
+                { key: 'Data', title: 'Data', render: (d) => new Date(d).toLocaleDateString('pt-BR') },
+                { key: 'Centro', title: 'Loja', render: (c) => c.split('-')[0].trim() },
+                { key: 'topico_modelo', title: 'Tópico' },
+                { key: 'Comentario', title: 'Comentário', className: 'comment-cell' },
+            ]);
+        }
+
+        function plotarAba6(data) {
+             const gratificacoesData = data.filter(d => d.classificacao === 'promotor' && d.sentimento_modelo === 'Positivo').sort((a, b) => b.Data - a.Data).slice(0, 5);
+            createTable('gratificacoes-table-container', gratificacoesData, [
+                { key: 'Data', title: 'Data', render: (d) => new Date(d).toLocaleDateString('pt-BR') },
+                { key: 'Centro', title: 'Loja', render: (c) => c.split('-')[0].trim() },
+                { key: 'topico_modelo', title: 'Tópico' },
+                { key: 'Comentario', title: 'Comentário', className: 'comment-cell' },
+            ]);
+        }
+        
+        function calculateLinearRegression(y) {
+            if (y.length < 2) return null;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            const n = y.length;
+            y.forEach((val, i) => { sumX += i; sumY += val; sumXY += i * val; sumXX += i * i; });
+            const m = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const b = (sumY - m * sumX) / n;
+            return { m, b };
+        }
+
+        function calcularNPS(data) {
+            const relevant = data.filter(d => d.classificacao === 'promotor' || d.classificacao === 'detrator');
+            if (relevant.length === 0) return { score: 0 };
+            const promotores = relevant.filter(d => d.classificacao === 'promotor').length;
+            const detratores = relevant.filter(d => d.classificacao === 'detrator').length;
+            return { score: Math.round(((promotores - detratores) / relevant.length) * 100) };
+        }
+        
+        function agregarDadosTemporais(data, groupBy) {
+            const getGroupKey = (date) => {
+                if (!(date instanceof Date) || isNaN(date)) return null;
+                const d = new Date(date);
+                if (groupBy === 'M') return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                if (groupBy === 'W') { const firstDay = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay()); return `${firstDay.getFullYear()}-${String(firstDay.getMonth() + 1).padStart(2, '0')}-${String(firstDay.getDate()).padStart(2, '0')}`; }
+                return d.toISOString().split('T')[0];
+            };
+            const grouped = data.reduce((acc, row) => {
+                const key = getGroupKey(row.Data);
+                if (key) { if (!acc[key]) acc[key] = []; acc[key].push(row); }
+                return acc;
+            }, {});
+            const result = {};
+            Object.keys(grouped).sort().forEach(key => {
+                const groupData = grouped[key];
+                result[key] = {
+                    nps: calcularNPS(groupData).score, count: groupData.length,
+                    sentimentos: groupData.reduce((acc, d) => { if(d.sentimento_modelo) acc[d.sentimento_modelo] = (acc[d.sentimento_modelo] || 0) + 1; return acc; }, {})
+                };
+            });
+            return result;
+        }
+
+        // =========================================
+        // JS DO CHATBOT DE IA (Versão 3 - Com Markdown)
+        // =========================================
+
+        const OPENROUTER_API_KEY = "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"; // ⚠️ SUBSTITUA AQUI
+        const OPENROUTER_MODEL = 'openai/gpt-oss-20b:free';
+
+        const chatModal = document.getElementById('ia-chat-modal');
+        const chatMessagesContainer = document.getElementById('ia-chat-messages');
+        const chatInput = document.getElementById('ia-chat-input');
+        const summaryCard = document.getElementById('ia-summary-card');
+        
+        let conversationHistory = [];
+
+        function addChatbotEventListeners() {
+            summaryCard.addEventListener('click', openChatbot);
+            document.getElementById('ia-chat-close-btn').addEventListener('click', closeChatbot);
+            document.getElementById('ia-chat-overlay').addEventListener('click', closeChatbot);
+            document.getElementById('ia-chat-send-btn').addEventListener('click', sendChatMessage);
+            
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+            
+            document.querySelectorAll('#ia-chat-quick-replies button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const prompt = button.dataset.prompt;
+                    addMessageToChat('user', prompt);
+                    conversationHistory.push({ role: 'user', content: prompt });
+                    addMessageToChat('loading');
+                    callOpenRouterAPI(conversationHistory);
+                });
+            });
+        }
+
+        function openChatbot(e) {
+            e.stopPropagation(); 
+            chatModal.style.display = 'block';
+            
+            if (conversationHistory.length === 0) {
+                const contextPrompt = createInitialPrompt();
+                conversationHistory.push(
+                    { role: 'system', content: contextPrompt.system },
+                    { role: 'user', content: contextPrompt.user }
+                );
+                addMessageToChat('loading');
+                callOpenRouterAPI(conversationHistory);
+            } else {
+                renderConversationHistory();
+            }
+        }
+
+        function closeChatbot(e) {
+            if (e) e.stopPropagation();
+            chatModal.style.display = 'none';
+            renderSummaryPreview();
+        }
+
+        function sendChatMessage() {
+            const messageText = chatInput.value.trim();
+            if (messageText === '') return;
+            
+            addMessageToChat('user', messageText); // Mostra o texto puro
+            chatInput.value = '';
+            
+            conversationHistory.push({ role: 'user', content: messageText });
+            addMessageToChat('loading');
+            callOpenRouterAPI(conversationHistory);
+        }
+
+        function addMessageToChat(role, content) {
+            const loadingMessage = chatMessagesContainer.querySelector('.chat-message.loading');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', role);
+            
+            let iconClass = 'fas fa-user';
+            if (role === 'assistant') iconClass = 'fas fa-robot';
+            if (role === 'loading') iconClass = 'fas fa-spinner fa-spin';
+
+            // NOVO: Usa 'marked.parse' para converter Markdown em HTML
+            // Para o usuário, usamos o 'content' puro para evitar formatação
+            const htmlContent = role === 'user' 
+                ? content.replace(/[&<>"']/g, (m) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'})[m])
+                : (role === 'loading' ? 'Analisando' : marked.parse(content));
+
+            messageElement.innerHTML = `
+                <div class="chat-icon">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div class="chat-content">
+                    ${htmlContent}
+                </div>
+            `;
+            
+            chatMessagesContainer.appendChild(messageElement);
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }
+
+        function renderConversationHistory() {
+            chatMessagesContainer.innerHTML = '';
+            conversationHistory.forEach(msg => {
+                if (msg.role !== 'system' && msg.role !== 'user_initial') {
+                    addMessageToChat(msg.role, msg.content);
+                }
+            });
+        }
+        
+        function renderSummaryPreview() {
+            const lastMessage = conversationHistory.slice().reverse().find(m => m.role === 'assistant');
+            
+            if (lastMessage) {
+                summaryCard.classList.add('has-convo');
+                const previewContent = document.getElementById('ia-summary-preview-content');
+                const snippet = lastMessage.content.substring(0, 150) + (lastMessage.content.length > 150 ? '...' : '');
+                
+                // NOVO: Usa 'marked.parse' aqui também
+                previewContent.innerHTML = marked.parse(snippet);
+            } else {
+                summaryCard.classList.remove('has-convo');
+            }
+        }
+
+        function createInitialPrompt() {
+            const { filtered_main, filtered_bigrams } = filtrarDados(getCurrentFilters());
+            
+            const kpis = {
+                totalComentarios: filtered_main.length,
+                nps: calcularNPS(filtered_main).score,
+                promotores: filtered_main.filter(d => d.classificacao === 'promotor').length,
+                detratores: filtered_main.filter(d => d.classificacao === 'detrator').length,
+                neutros: filtered_main.filter(d => d.classificacao === 'neutro').length,
+                sentimentoPositivo: filtered_main.filter(d => d.sentimento_modelo === 'Positivo').length,
+                sentimentoNegativo: filtered_main.filter(d => d.sentimento_modelo === 'Negativo').length,
+            };
+            
+            const countBy = (arr, key) => arr.reduce((acc, item) => { if(item[key] && item[key] !=='Nenhum') acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
+            const sortedTopicos = Object.entries(countBy(filtered_main, 'topico_modelo')).sort(([,a],[,b]) => b - a).slice(0, 5);
+            
+            const topPromoterBigrams = filtered_bigrams.filter(d => d.Classificacao === 'promotor').sort((a,b) => b.Frequencia - a.Frequencia).slice(0, 3).map(d => d.Bigrama).join(', ');
+            const topDetractorBigrams = filtered_bigrams.filter(d => d.Classificacao === 'detrator').sort((a,b) => b.Frequencia - a.Frequencia).slice(0, 3).map(d => d.Bigrama).join(', ');
+
+            const systemPrompt = `Você é 'Swift Analytics IA', um assistente especialista em análise de dados e NPS. Sua resposta deve ser em português do Brasil, em tom profissional, mas amigável e direto. Use **Markdown** para formatar (negrito, listas, tabelas). Separe bem os parágrafos com quebras de linha duplas. Não invente dados.`;
+
+            const userPrompt = `
+            Aqui está um resumo dos dados de NPS filtrados atualmente:
+            
+            **KPIs Principais:**
+            - **Total de Comentários:** ${kpis.totalComentarios}
+            - **NPS Score:** ${kpis.nps}
+            - **Distribuição (Promotores/Neutros/Detratores):** ${kpis.promotores} / ${kpis.neutros} / ${kpis.detratores}
+            - **Sentimentos (Positivo/Negativo):** ${kpis.sentimentoPositivo} / ${kpis.sentimentoNegativo}
+            
+            **Tópicos e Termos Chave:**
+            - **Top 5 Tópicos:** ${sortedTopicos.map(t => `${t[0]} (${t[1]})`).join(', ')}
+            - **Principais Elogios (Bigramas):** ${topPromoterBigrams || 'N/A'}
+            - **Principais Reclamações (Bigramas):** ${topDetractorBigrams || 'N/A'}
+            
+            Por favor, gere um "overview" (resumo executivo) com os principais insights desses dados. Seja breve (2-3 parágrafos) e foque no que é mais importante, separando bem os parágrafos.
+            `;
+            
+            return { system: systemPrompt, user: userPrompt };
+        }
+
+        async function callOpenRouterAPI(messages) {
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: OPENROUTER_MODEL,
+                        messages: messages,
+                        extra_body: { "reasoning": true }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Erro na API: ${response.statusText}. Detalhes: ${JSON.stringify(errorData)}`);
+                }
+                
+                const data = await response.json();
+                const assistantMessage = data.choices[0].message;
+                
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: assistantMessage.content,
+                    reasoning_details: assistantMessage.reasoning_details
+                });
+                
+                addMessageToChat('assistant', assistantMessage.content);
+
+            } catch (error) {
+                console.error("Erro ao chamar a API OpenRouter:", error);
+                addMessageToChat('assistant', 'Desculpe, ocorreu um erro ao conectar com a IA. Verifique sua chave de API e a conexão.');
+            }
+        }
+
+        // =========================================
+        // JS DO MENU RESPONSIVO (BURGER)
+        // =========================================
+        function addResponsiveEventListeners() {
+            const burgerBtn = document.getElementById('burger-menu-btn');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            burgerBtn.addEventListener('click', () => {
+                sidebar.classList.add('visible');
+                sidebarOverlay.style.display = 'block';
+            });
+
+            const closeSidebar = () => {
+                sidebar.classList.remove('visible');
+                sidebarOverlay.style.display = 'none';
+            };
+            
+            sidebarOverlay.addEventListener('click', closeSidebar);
+            
+            document.querySelectorAll('.sidebar .filter-group select, .sidebar .filter-group input, #reset-filters').forEach(el => {
+                el.addEventListener('change', () => {
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+        }
+
+        // INICIALIZA O DASHBOARD
+        initializeDashboard();
+    });
+    </script>
+</body>
+</html>
