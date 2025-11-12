@@ -61,6 +61,18 @@
             outline: none; border-color: var(--swift-orange-2);
             box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
         }
+        /* Estilo para filtros locais dentro dos cards */
+        .local-filters {
+            display: flex; gap: 0.5rem; align-items: center;
+        }
+        .local-filters label {
+            font-size: 0.85rem; font-weight: 500; color: var(--gray-700); margin-bottom: 0;
+        }
+        .local-filters select {
+            padding: 0.4rem; border-radius: 6px; border: 1px solid var(--gray-300); 
+            font-family: var(--font-family-base); font-size: 0.9rem; width: auto;
+        }
+        
         #reset-filters {
             width: 100%; padding: 0.75rem; margin-top: auto; background-color: var(--swift-orange-1);
             color: var(--white); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
@@ -93,9 +105,13 @@
         .card:hover { box-shadow: var(--shadow-md); transform: translateY(-8px); }
         .card-header {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-shrink: 0;
+            flex-wrap: wrap; /* Permite quebrar linha em mobile */
+            gap: 1rem; /* Espaçamento entre título e filtros locais */
         }
         .card-header h3 { display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; font-weight: 600; }
         .card-header h3 i { color: var(--swift-orange-1); }
+        .card-header .local-filters { margin-left: auto; } /* Alinha filtros locais à direita */
+        
         .chart-container { flex-grow: 1; min-height: 350px; }
         .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;}
         .kpi-card {
@@ -111,8 +127,13 @@
         .kpi-card .label { font-size: 0.9rem; font-weight: 500; color: var(--gray-500); }
         
         #visao-geral-grid { grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(350px, auto); }
-        #temporal-lojas-grid, #analise-topicos-grid, #analise-bigramas-grid {
+        #temporal-lojas-grid, #analise-topicos-grid {
             grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(450px, auto);
+        }
+        /* REQ 2: Grid da Aba Bigramas atualizada */
+        #analise-bigramas-grid {
+             grid-template-columns: 1fr; /* Uma coluna principal para os cards */
+             gap: 2rem; /* Espaço entre os cards principais */
         }
         
         /* ========================================= */
@@ -214,7 +235,11 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .table-container { overflow-x: auto; }
+        .table-container { 
+            overflow-x: auto; 
+            width: 100%; 
+            -webkit-overflow-scrolling: touch; 
+        }
         .custom-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .custom-table th, .custom-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--gray-100); }
         .custom-table thead th { background-color: var(--gray-100); font-weight: 600; }
@@ -324,7 +349,6 @@
             padding: 0.75rem 1.25rem;
             border-radius: 12px;
             line-height: 1.6;
-            /* REMOVIDO: white-space: pre-wrap; */
         }
         
         /* Mensagem do Usuário (Direita) */
@@ -373,7 +397,7 @@
         }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 
-        /* NOVO: Estilos para Markdown (Tabelas, Listas, etc.) */
+        /* Estilos para Markdown (Tabelas, Listas, etc.) */
         .chat-content p {
             margin: 0 0 0.5rem 0;
         }
@@ -407,7 +431,7 @@
             border-bottom: none;
         }
         .chat-content ul, .chat-content ol {
-            margin: 0.5rem 0 1rem 1.5rem; /* Ajustado para caber na bolha */
+            margin: 0.5rem 0 1rem 1.5rem;
             padding-left: 1rem;
         }
         .chat-content li {
@@ -501,7 +525,7 @@
                 width: 250px;
             }
             .kpi-row {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             }
             #visao-geral-grid {
                 grid-template-columns: 1fr 1fr;
@@ -527,6 +551,11 @@
             #ia-chat-container {
                 width: 90%;
                 height: 85vh;
+            }
+            /* REQ 2: Ajuste grid bigramas em tablet */
+            .card-header .local-filters {
+                 margin-left: 0; /* Remove alinhamento auto */
+                 width: 100%; /* Ocupa linha inteira se quebrar */
             }
         }
 
@@ -625,8 +654,12 @@
                 overflow-x: auto;
             }
             .custom-table .comment-cell {
-                min-width: 250px;
+                min-width: 200px; 
             }
+            .custom-table th, .custom-table td {
+                padding: 8px 10px; 
+            }
+            
             #ia-chat-messages {
                 padding: 1rem;
                 gap: 1rem;
@@ -634,14 +667,30 @@
             .chat-message {
                 max-width: 90%;
             }
+            
             .chat-content {
                 padding: 0.6rem 1rem;
+                font-size: 0.9rem; 
             }
             #ia-chat-quick-replies {
                 padding: 0.75rem;
             }
+            #ia-chat-quick-replies button {
+                padding: 0.4rem 0.8rem; 
+                font-size: 0.8rem; 
+            }
             #ia-chat-input-area {
-                padding: 0.75rem;
+                padding: 0.5rem; 
+                gap: 0.5rem; 
+            }
+            #ia-chat-input {
+                padding: 0.6rem 0.8rem; 
+                font-size: 0.9rem; 
+            }
+            #ia-chat-send-btn {
+                width: 40px; 
+                height: 40px; 
+                font-size: 1rem; 
             }
         }
     </style>
@@ -651,7 +700,7 @@
     <div id="welcome-overlay">
         <div id="welcome-popup">
             <h2>Bem-vindo ao SwiftAnalytics</h2>
-            <p>Um dashboard interativo de análise de dados.</p>
+            <p>Um dashboard para análise de KPI's de NPS das lojas Swift</p>
             <div class="creators">
                 <div class="creator-profile">
                     <img src="eduardo.jpg" alt="Foto Eduardo">
@@ -662,7 +711,7 @@
                     <span>Fujita</span>
                 </div>
             </div>
-            <button id="start-button">Quero conhecer o projeto</button>
+            <button id="start-button">Quero conhecer o dashboard!</button>
         </div>
     </div>
 
@@ -675,7 +724,7 @@
             <i class="fas fa-chart-simple"></i>
             <h1>SWIFT<span>Analytics</span></h1>
         </div>
-        <p style="font-size: 0.8rem; color: var(--gray-500); margin-top: -2rem; margin-bottom: 1rem;">Use <b>Ctrl+Click</b> para selecionar múltiplos filtros.</p>
+        <p style="font-size: 0.8rem; color: var(--gray-500); margin-top: -2rem; margin-bottom: 1rem;">Use <b>Ctrl+Click</b> (desktop) ou <b>toque e segure</b> (alguns telemóveis) para selecionar múltiplos filtros.</p>
 
         <div class="filter-group">
             <label for="date-start"><i class="fas fa-calendar-alt"></i> <span>Data Início</span></label>
@@ -719,6 +768,16 @@
 
         <section id="tab-1" class="tab-content active">
             <div class="kpi-row">
+                 <div class="card kpi-card">
+                    <div class="icon" style="background-image: linear-gradient(145deg, #4e8cff, #2a6ce8);"><i class="fas fa-poll-h"></i></div>
+                    <div>
+                        <div id="kpi-total-avaliacoes" class="value">0</div>
+                        <div class="label">Total de Avaliações</div>
+                        <div id="kpi-pc-comentarios" class="value" style="font-size: 1.5rem; margin-top: 5px;">0%</div>
+                        <div class="label">com comentário</div>
+                    </div>
+                </div>
+                 
                  <div class="card kpi-card">
                     <div class="icon"><i class="fas fa-comments"></i></div>
                     <div><div id="kpi-total-value" class="value">0</div><div class="label">Total de Comentários</div></div>
@@ -768,6 +827,28 @@
                     </div>
                     <div id="grafico-linha-nps" class="chart-container"></div>
                 </div>
+
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-users-line"></i>Classificação (Prom/Neu/Det) ao Longo do Tempo</h3>
+                    </div>
+                    <div id="grafico-linha-classificacao" class="chart-container"></div>
+                </div>
+
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-smile-beam"></i>Sentimento (Pos/Neu/Neg) ao Longo do Tempo</h3>
+                    </div>
+                    <div id="grafico-linha-sentimento" class="chart-container"></div>
+                </div>
+
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-area"></i>Volume Total vs. Comentários ao Longo do Tempo</h3>
+                    </div>
+                    <div id="grafico-linha-volume" class="chart-container"></div>
+                </div>
+                
                 <div class="card">
                     <div class="card-header"><h3><i class="fas fa-store"></i>NPS Score por Loja</h3></div>
                     <div id="grafico-coluna-nps-loja" class="chart-container"></div>
@@ -793,6 +874,33 @@
                     </div>
                     <div id="bar-topicos" class="chart-container"></div>
                 </div>
+
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-layer-group"></i>Tópicos por Classificação</h3>
+                    </div>
+                    <div id="grafico-stacked-topicos-classificacao" class="chart-container"></div>
+                </div>
+                
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-layer-group"></i>Tópicos por Sentimento</h3>
+                    </div>
+                    <div id="grafico-stacked-topicos-sentimento" class="chart-container"></div>
+                </div>
+
+                <!-- NOVO GRÁFICO DE EVOLUÇÃO TEMPORAL DE TÓPICOS (REQ 4) -->
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> Evolução Temporal de Tópicos</h3>
+                        <div class="local-filters">
+                            <label for="filtro-topico-extra">Tópico Extra:</label>
+                            <select id="filtro-topico-extra"></select>
+                        </div>
+                    </div>
+                    <div id="grafico-linha-topicos" class="chart-container"></div>
+                </div>
+                
                 <div class="card">
                     <div class="card-header"><h3><i class="fas fa-thumbs-up"></i>Top 5 Tópicos Positivos</h3></div>
                     <div id="top-topicos-positivos" class="chart-container"></div>
@@ -804,6 +912,7 @@
             </div>
         </section>
 
+        <!-- REQ 2: HTML DA ABA DE BIGRAMAS ATUALIZADO -->
         <section id="tab-4" class="tab-content">
              <div class="kpi-row">
                  <div class="card kpi-card">
@@ -818,24 +927,72 @@
                     <button data-metric="Score_TFIDF">Score de Impacto</button>
                 </div>
             </div>
-            <div id="analise-bigramas-grid" class="grid-container" style="grid-template-columns: repeat(3, 1fr);">
-                 <div class="card">
-                    <div class="card-header"><h3><i class="fas fa-user-check"></i>Top 10 (Promotores)</h3></div>
-                    <div id="bigramas-promotores" class="chart-container"></div>
-                </div>
-                 <div class="card">
-                    <div class="card-header"><h3><i class="fas fa-user-meh"></i>Top 10 (Neutros)</h3></div>
-                    <div id="bigramas-neutros" class="chart-container"></div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><h3><i class="fas fa-user-times"></i>Top 10 (Detratores)</h3></div>
-                    <div id="bigramas-detratores" class="chart-container"></div>
-                </div>
+            
+            <div id="analise-bigramas-grid" class="grid-container">
+            
+                <!-- Seção 1: Análise por Classificação (Antiga) -->
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-tags"></i> Análise por Classificação (Promotor/Neutro/Detrator)</h3>
+                    </div>
+                    <!-- Sub-grid para os gráficos de classificação -->
+                    <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); padding-top: 1rem; gap: 1rem;">
+                        <div class="sub-card" style="min-height: 350px;">
+                            <h4 style="font-weight: 600; margin-bottom: 1rem; text-align: center;"><i class="fas fa-user-check" style="color: #a3d6a3;"></i> Top 10 (Promotores)</h4>
+                            <div id="bigramas-promotores" class="chart-container" style="min-height: 300px;"></div>
+                        </div>
+                         <div class="sub-card" style="min-height: 350px;">
+                            <h4 style="font-weight: 600; margin-bottom: 1rem; text-align: center;"><i class="fas fa-user-meh" style="color: #aec6cf;"></i> Top 10 (Neutros)</h4>
+                            <div id="bigramas-neutros" class="chart-container" style="min-height: 300px;"></div>
+                        </div>
+                        <div class="sub-card" style="min-height: 350px;">
+                            <h4 style="font-weight: 600; margin-bottom: 1rem; text-align: center;"><i class="fas fa-user-times" style="color: #ff9999;"></i> Top 10 (Detratores)</h4>
+                            <div id="bigramas-detratores" class="chart-container" style="min-height: 300px;"></div>
+                        </div>
+                    </div>
+                </div> <!-- Fim Card Classificação -->
+                
+                <!-- Gráfico de Score (Antigo, agora movido) -->
                  <div id="bigramas-por-score-card" class="card" style="grid-column: 1 / -1;">
-                    <div class="card-header"><h3><i class="fas fa-sort-amount-up"></i>Bigramas por Métrica</h3></div>
+                    <div class="card-header"><h3><i class="fas fa-sort-amount-up"></i>Bigramas por Métrica (Classificação)</h3></div>
                     <div id="bigramas-por-score" class="chart-container"></div>
                  </div>
-            </div>
+
+                <!-- Seção 2: Análise por Sentimento e Categoria (Nova) -->
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-smile-beam"></i> Análise por Sentimento e Categoria (Nova Fonte)</h3>
+                        <div class="local-filters">
+                            <label for="filtro-categoria-bigrama">Filtrar Categoria:</label>
+                            <select id="filtro-categoria-bigrama"></select>
+                        </div>
+                    </div>
+                    
+                    <!-- Sub-grid para os gráficos de sentimento -->
+                    <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); padding-top: 1rem; gap: 1rem; border-bottom: 1px solid var(--gray-100); padding-bottom: 2rem; margin-bottom: 1.5rem;">
+                        <div class="sub-card" style="min-height: 350px;">
+                            <h4 style="font-weight: 600; margin-bottom: 1rem; text-align: center;"><i class="fas fa-smile" style="color: #a3d6a3;"></i> Top 10 (Positivo)</h4>
+                            <div id="bigramas-sent-positivo" class="chart-container" style="min-height: 300px;"></div>
+                        </div>
+                         <div class="sub-card" style="min-height: 350px;">
+                            <h4 style="font-weight: 600; margin-bottom: 1rem; text-align: center;"><i class="fas fa-meh" style="color: #aec6cf;"></i> Top 10 (Neutro)</h4>
+                            <div id="bigramas-sent-neutro" class="chart-container" style="min-height: 300px;"></div>
+                        </div>
+                        <div class="sub-card" style="min-height: 350px;">
+                            <h4 style="font-weight: 600; margin-bottom: 1rem; text-align: center;"><i class="fas fa-frown" style="color: #ff9999;"></i> Top 10 (Negativo)</h4>
+                            <div id="bigramas-sent-negativo" class="chart-container" style="min-height: 300px;"></div>
+                        </div>
+                    </div> <!-- Fim Sub-grid Sentimento -->
+                    
+                    <!-- Gráfico de Categoria -->
+                    <div class="sub-card" style="min-height: 400px;">
+                        <h4 style="font-weight: 600; margin-bottom: 1rem; text-align: center;">Top 15 Bigramas por Categoria Selecionada</h4>
+                        <div id="bigramas-por-categoria" class="chart-container"></div>
+                    </div>
+                    
+                </div> <!-- Fim Card Sentimento/Categoria -->
+                
+             </div>
         </section>
         
         <section id="tab-5" class="tab-content">
@@ -882,6 +1039,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         const URL_PRINCIPAL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRBNwjlXEqi8I-DyPIlnoIhl_q_CAKnmncKMNzRZZNDYDfJ5Rb66MwqcGswfd9GOW8cpnD9c9Ah-0I9/pub?gid=0&single=true&output=csv';
         const URL_BIGRAMAS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRBNwjlXEqi8I-DyPIlnoIhl_q_CAKnmncKMNzRZZNDYDfJ5Rb66MwqcGswfd9GOW8cpnD9c9Ah-0I9/pub?gid=1364274335&single=true&output=csv';
+        // REQ 1: Nova fonte de dados
+        const URL_BIGRAMAS_SENTIMENTO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRBNwjlXEqi8I-DyPIlnoIhl_q_CAKnmncKMNzRZZNDYDfJ5Rb66MwqcGswfd9GOW8cpnD9c9Ah-0I9/pub?gid=842698987&single=true&output=csv';
         
         const PALETA_CORES_SWIFT = ['#FF6600', '#FF8533', '#FFA500', '#FFC04D', '#FFDAB9'];
 
@@ -901,7 +1060,9 @@
             hoverlabel: { bgcolor: "#ffffff", font: { color: '#000000', family: 'Poppins, sans-serif', size: 13 }, bordercolor: '#d9d9d9' },
             legend: { orientation: 'h', yanchor: 'bottom', y: 1.02, xanchor: 'right', x: 1 }
         };
-        let mainData = [], bigramData = [], allFilterIds = [];
+        
+        // REQ 1: Adicionada nova variável global
+        let allMainData = [], mainData = [], bigramData = [], bigramDataSentimento = [], allFilterIds = [];
 
         async function initializeDashboard() {
             const overlay = document.getElementById('welcome-overlay');
@@ -912,10 +1073,17 @@
             });
             
             try {
-                const [mainResult, bigramResult] = await Promise.all([ parseCSV(URL_PRINCIPAL), parseCSV(URL_BIGRAMAS) ]);
-                processData(mainResult.data, bigramResult.data);
+                // REQ 1: Carregar a nova fonte de dados
+                const [mainResult, bigramResult, bigramSentimentoResult] = await Promise.all([ 
+                    parseCSV(URL_PRINCIPAL), 
+                    parseCSV(URL_BIGRAMAS),
+                    parseCSV(URL_BIGRAMAS_SENTIMENTO) 
+                ]);
                 
-                const dateObjects = mainData.map(d => d.Data).filter(d => d instanceof Date && !isNaN(d));
+                // REQ 1: Processar a nova fonte de dados
+                processData(mainResult.data, bigramResult.data, bigramSentimentoResult.data);
+                
+                const dateObjects = allMainData.map(d => d.Data).filter(d => d instanceof Date && !isNaN(d));
                 if (dateObjects.length > 0) {
                     const dates = dateObjects.map(d => d.getTime());
                     document.getElementById('date-start').value = new Date(Math.min(...dates)).toISOString().split('T')[0];
@@ -941,10 +1109,14 @@
             });
         }
         
-       function processData(main, bigrams) {
-            mainData = main.filter(row => row.sentimento_modelo && row.sentimento_modelo !== 'Sem Comentário').map(row => ({
+       // REQ 1: Atualizada assinatura da função
+       function processData(main, bigrams, bigramsSentimento) {
+            allMainData = main.map(row => ({
                 ...row, Data: new Date(row['Data Avaliação']), NPS: parseInt(row['NPS'], 10)
             }));
+            
+            mainData = allMainData.filter(row => row.sentimento_modelo && row.sentimento_modelo !== 'Sem Comentário');
+            
             bigramData = bigrams.map(row => ({
                 'Centro': row['Centro'],
                 'Bigrama': row['Bigrama'],
@@ -952,18 +1124,29 @@
                 'Score_TFIDF': parseFloat(row['Score_TFIDF']),
                 'Frequencia': parseInt(row['Frequencia'], 10)
             })).filter(d => d.Classificacao);
+            
+            // REQ 1: Processar nova fonte de dados
+            bigramDataSentimento = bigramsSentimento.map(row => ({
+                'Centro': row['Centro'],
+                'Bigrama': row['Bigrama'],
+                'Sentimento': row['Sentimento'],
+                'Categoria': row['Categoria'],
+                'Score_TFIDF': parseFloat(row['Score_TFIDF']),
+                'Frequencia': parseInt(row['Frequencia'], 10)
+            })).filter(d => d.Sentimento && d.Categoria && d.Bigrama);
         }
 
         function populateFilters() {
             const unique = (arr) => [...new Set(arr)].filter(Boolean).sort();
-            const centros = unique(mainData.map(d => d.Centro));
-            const classificacoes = unique(mainData.map(d => d.classificacao));
+            const centros = unique(allMainData.map(d => d.Centro));
+            const classificacoes = unique(allMainData.map(d => d.classificacao));
             const sentimentos = unique(mainData.map(d => d.sentimento_modelo));
             
             populateSelect('filtro-centro', centros);
             populateSelect('filtro-classificacao', classificacoes);
             populateSelect('filtro-sentimento', sentimentos);
             
+            // IDs dos filtros globais
             allFilterIds.push('filtro-centro', 'filtro-classificacao', 'filtro-sentimento');
         }
         
@@ -978,9 +1161,11 @@
         }
         
         function addEventListeners() {
-            allFilterIds.push('date-start', 'date-end', 'seletor-agrupamento-temporal');
-            allFilterIds.forEach(id => document.getElementById(id)?.addEventListener('change', updateDashboard));
+            // IDs dos filtros que disparam update
+            const updateTriggerIds = ['date-start', 'date-end', 'seletor-agrupamento-temporal', ...allFilterIds];
+            updateTriggerIds.forEach(id => document.getElementById(id)?.addEventListener('change', updateDashboard));
             
+            // Botão de Reset
             document.getElementById('reset-filters').addEventListener('click', () => {
                 allFilterIds.forEach(id => {
                     const el = document.getElementById(id);
@@ -989,7 +1174,20 @@
                         else el.selectedIndex = 0;
                     }
                 });
-                const dateObjects = mainData.map(d => d.Data).filter(d => d instanceof Date && !isNaN(d));
+                
+                // Resetar seletor de agrupamento temporal
+                const seletorTemporal = document.getElementById('seletor-agrupamento-temporal');
+                if (seletorTemporal) seletorTemporal.value = 'M'; // Reset para Mês
+
+                // Resetar filtros locais (REQ 2 e REQ 4)
+                const filtroExtra = document.getElementById('filtro-topico-extra');
+                if (filtroExtra) filtroExtra.selectedIndex = 0;
+                
+                const filtroCat = document.getElementById('filtro-categoria-bigrama');
+                if (filtroCat) filtroCat.selectedIndex = 0;
+
+                // Resetar datas com base em allMainData
+                const dateObjects = allMainData.map(d => d.Data).filter(d => d instanceof Date && !isNaN(d));
                 if (dateObjects.length > 0) {
                     const dates = dateObjects.map(d => d.getTime());
                     document.getElementById('date-start').value = new Date(Math.min(...dates)).toISOString().split('T')[0];
@@ -1023,17 +1221,19 @@
 
         function updateDashboard() {
             const filters = getCurrentFilters();
-            const { filtered_main, filtered_bigrams } = filtrarDados(filters);
+            // REQ 1 & 2: Usar a nova função de filtro
+            const { filtered_all_main, filtered_main, filtered_bigrams, filtered_bigrams_sentimento } = filtrarDados(filters);
             const activeTabId = document.querySelector('.tab-content.active')?.id;
             
             conversationHistory = [];
             renderSummaryPreview(); 
             
             if (!activeTabId) return;
-            if (activeTabId === 'tab-1') plotarAba1(filtered_main);
-            if (activeTabId === 'tab-2') plotarAba2(filtered_main);
-            if (activeTabId === 'tab-3') plotarAba3(filtered_main);
-            if (activeTabId === 'tab-4') plotarAba4(filtered_bigrams);
+            if (activeTabId === 'tab-1') plotarAba1(filtered_main, filtered_all_main);
+            if (activeTabId === 'tab-2') plotarAba2(filtered_main, filtered_all_main); 
+            if (activeTabId === 'tab-3') plotarAba3(filtered_main, filtered_all_main); 
+            // REQ 2: Passar os dois conjuntos de dados de bigramas
+            if (activeTabId === 'tab-4') plotarAba4(filtered_bigrams, filtered_bigrams_sentimento);
             if (activeTabId === 'tab-5') plotarAba5(filtered_main);
             if (activeTabId === 'tab-6') plotarAba6(filtered_main);
         }
@@ -1048,113 +1248,430 @@
             };
         }
         
+       // REQ 1 & 2: Lógica de filtro atualizada
        function filtrarDados(filters) {
             const endDate = new Date(filters.end); endDate.setDate(endDate.getDate() + 1);
             
-            const filtered_main = mainData.filter(d => 
+            // 1. Filtrar allMainData por data, centro e classificação
+            const filtered_all_main = allMainData.filter(d => 
                 d.Data >= filters.start && d.Data < endDate &&
                 (filters.centros.length === 0 || filters.centros.includes(d.Centro)) &&
-                (filters.classificacoes.length === 0 || filters.classificacoes.includes(d.classificacao)) &&
+                (filters.classificacoes.length === 0 || filters.classificacoes.includes(d.classificacao))
+            );
+            
+            // 2. Filtrar mainData (comentários) com base no filtro anterior + filtro de sentimento
+            const filtered_main = filtered_all_main.filter(d => 
+                d.sentimento_modelo && d.sentimento_modelo !== 'Sem Comentário' &&
                 (filters.sentimentos.length === 0 || filters.sentimentos.includes(d.sentimento_modelo))
             );
-
+            
             const normalizedCentros = filters.centros.map(c => c.split('-')[0].trim());
 
+            // 3. Filtrar bigramData (antigo) por centros e classificações
             const filtered_bigrams = bigramData.filter(d => {
                 const bigramCentroId = d.Centro ? String(d.Centro).split('-')[0].trim() : '';
                 return (normalizedCentros.length === 0 || normalizedCentros.includes(bigramCentroId)) &&
                        (filters.classificacoes.length === 0 || filters.classificacoes.includes(d.Classificacao));
             });
 
-            return { filtered_main, filtered_bigrams };
+            // 4. Filtrar bigramDataSentimento (novo) por centros e sentimentos
+            const filtered_bigrams_sentimento = bigramDataSentimento.filter(d => {
+                const bigramCentroId = d.Centro ? String(d.Centro).split('-')[0].trim() : '';
+                return (normalizedCentros.length === 0 || normalizedCentros.includes(bigramCentroId)) &&
+                       (filters.sentimentos.length === 0 || filters.sentimentos.includes(d.Sentimento));
+            });
+
+            return { filtered_all_main, filtered_main, filtered_bigrams, filtered_bigrams_sentimento };
         }
 
 
         const getColorsForLabels = (labels, group) => labels.map(label => COLOR_MAP[group][label] || '#cccccc');
         const sortDataByOrder = (data, order) => Object.entries(data).sort(([a], [b]) => order.indexOf(a) - order.indexOf(b));
 
-        function plotarAba1(data) {
-            document.getElementById('kpi-total-value').textContent = data.length.toLocaleString('pt-BR');
-            document.getElementById('kpi-nps-value').textContent = calcularNPS(data).score;
-            document.getElementById('kpi-promotores').textContent = data.filter(d => d.classificacao === 'promotor').length;
-            document.getElementById('kpi-detratores').textContent = data.filter(d => d.classificacao === 'detrator').length;
+        function plotarAba1(data, data_all) {
+            const totalAvaliacoes = data_all.length;
+            const totalComentarios = data.length;
+            const pcComentarios = totalAvaliacoes > 0 ? (totalComentarios / totalAvaliacoes) * 100 : 0;
+            
+            document.getElementById('kpi-total-avaliacoes').textContent = totalAvaliacoes.toLocaleString('pt-BR');
+            document.getElementById('kpi-pc-comentarios').textContent = `${pcComentarios.toFixed(0)}%`;
+            document.getElementById('kpi-total-value').textContent = totalComentarios.toLocaleString('pt-BR');
+            
+            const npsResult = calcularNPS(data_all);
+document.getElementById('kpi-nps-value').textContent = npsResult.score.toFixed(0);            document.getElementById('kpi-promotores').textContent = npsResult.promotores.toLocaleString('pt-BR');
+            document.getElementById('kpi-detratores').textContent = npsResult.detratores.toLocaleString('pt-BR');
 
             const countBy = (arr, key) => arr.reduce((acc, item) => { if(item[key]) acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
             
-            const sortedClassif = sortDataByOrder(countBy(data, 'classificacao'), ORDER.Classificacao);
+            const sortedClassif = sortDataByOrder(countBy(data_all, 'classificacao'), ORDER.Classificacao);
+            // REQ 3: Garantir hovertemplate explícito
             Plotly.react('pie-classificacao', [{ labels: sortedClassif.map(d=>d[0]), values: sortedClassif.map(d=>d[1]), type: 'pie', hole: .4, marker: { colors: getColorsForLabels(sortedClassif.map(d=>d[0]), 'Classificacao') }, sort: false, hovertemplate: '<b>%{label}</b><br>%{value} (%{percent})<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE }, PLOTLY_CONFIG);
             
             const sortedSent = sortDataByOrder(countBy(data, 'sentimento_modelo'), ORDER.Sentimento);
+            // REQ 3: Garantir hovertemplate explícito
             Plotly.react('pie-sentimento', [{ labels: sortedSent.map(d=>d[0]), values: sortedSent.map(d=>d[1]), type: 'pie', hole: .4, marker: { colors: getColorsForLabels(sortedSent.map(d=>d[0]), 'Sentimento') }, sort: false, hovertemplate: '<b>%{label}</b><br>%{value} (%{percent})<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE }, PLOTLY_CONFIG);
 
-            const traces = ORDER.Sentimento.map(sentimento => ({ x: ORDER.Classificacao, y: ORDER.Classificacao.map(c => data.filter(d => d.classificacao === c && d.sentimento_modelo === sentimento).length), name: sentimento, type: 'bar', marker: { color: COLOR_MAP.Sentimento[sentimento] }, hovertemplate: '<b>%{x}</b><br>%{name}: %{y}<extra></extra>' }));
+            const traces = ORDER.Sentimento.map(sentimento => ({ 
+                x: ORDER.Classificacao, 
+                y: ORDER.Classificacao.map(c => data.filter(d => d.classificacao === c && d.sentimento_modelo === sentimento).length), 
+                name: sentimento, 
+                type: 'bar', 
+                marker: { color: COLOR_MAP.Sentimento[sentimento] }, 
+                // REQ 3: Corrigido o hovertemplate para usar %{name}
+                hovertemplate: '<b>Classificação: %{x}</b><br>Sentimento: %{name}<br>Contagem: %{y}<extra></extra>' 
+            }));
             Plotly.react('bar-sentimento-classificacao', traces, { ...PLOTLY_LAYOUT_BASE, barmode: 'stack', yaxis: { title: 'Contagem' } }, PLOTLY_CONFIG);
         }
         
-        function plotarAba2(data) {
+        function plotarAba2(data, data_all) {
             const groupBy = document.getElementById('seletor-agrupamento-temporal').value;
-            const temporalData = agregarDadosTemporais(data, groupBy);
+            const temporalData = agregarDadosTemporais(data_all, groupBy, true); 
             
-            const npsTraces = [{ x: Object.keys(temporalData), y: Object.values(temporalData).map(d => d.nps), type: 'scatter', mode: 'lines+markers', name: 'NPS', line: { shape: 'spline', color: PALETA_CORES_SWIFT[0], width: 3 }, hovertemplate: '<b>%{x}</b><br>NPS: %{y}<extra></extra>' }];
-            const trendline = calculateLinearRegression(Object.values(temporalData).map(d => d.nps));
+const npsTraces = [{ x: Object.keys(temporalData), y: Object.values(temporalData).map(d => d.nps), type: 'scatter', mode: 'lines+markers', name: 'NPS', line: { shape: 'spline', color: PALETA_CORES_SWIFT[0], width: 3 }, hovertemplate: '<b>%{x}</b><br>NPS: %{y:.0f}<extra></extra>' }];            const trendline = calculateLinearRegression(Object.values(temporalData).map(d => d.nps));
             if (trendline) {
                 npsTraces.push({ x: Object.keys(temporalData), y: Object.keys(temporalData).map((_, i) => trendline.m * i + trendline.b), type: 'scatter', mode: 'lines', name: 'Tendência', line: { color: 'rgba(0,0,0,0.5)', dash: 'dot' }, hoverinfo: 'skip' });
             }
             Plotly.react('grafico-linha-nps', npsTraces, { ...PLOTLY_LAYOUT_BASE, title: {text: `NPS Score por ${groupBy === 'D' ? 'Dia' : groupBy === 'W' ? 'Semana' : 'Mês'}`, x: 0.5} }, PLOTLY_CONFIG);
+
+            const classifTraces = ['promotor', 'neutro', 'detrator'].map(tipo => ({
+                x: Object.keys(temporalData),
+                y: Object.values(temporalData).map(d => d.classificacao[tipo] || 0),
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+                line: { shape: 'spline', color: COLOR_MAP.Classificacao[tipo], width: 3 },
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: `<b>%{x}</b><br>%{name}: %{y}<extra></extra>`
+            }));
+            Plotly.react('grafico-linha-classificacao', classifTraces, { ...PLOTLY_LAYOUT_BASE, title: {text: `Contagem por Classificação (${groupBy === 'D' ? 'Dia' : groupBy === 'W' ? 'Semana' : 'Mês'})`, x: 0.5} }, PLOTLY_CONFIG);
+
+            const sentimentTraces = ['Positivo', 'Neutro', 'Negativo'].map(tipo => ({
+                x: Object.keys(temporalData),
+                y: Object.values(temporalData).map(d => d.sentimentos[tipo] || 0),
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: tipo,
+                line: { shape: 'spline', color: COLOR_MAP.Sentimento[tipo], width: 3 },
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: `<b>%{x}</b><br>%{name}: %{y}<extra></extra>`
+            }));
+            Plotly.react('grafico-linha-sentimento', sentimentTraces, { ...PLOTLY_LAYOUT_BASE, title: {text: `Contagem por Sentimento (${groupBy === 'D' ? 'Dia' : groupBy === 'W' ? 'Semana' : 'Mês'})`, x: 0.5} }, PLOTLY_CONFIG);
             
-            const npsPorLoja = data.reduce((acc, d) => { if(d.Centro) { if (!acc[d.Centro]) acc[d.Centro] = []; acc[d.Centro].push(d); } return acc; }, {});
+            const totalTrace = {
+                x: Object.keys(temporalData),
+                y: Object.values(temporalData).map(d => d.count),
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Total Avaliações',
+                line: { shape: 'spline', color: PALETA_CORES_SWIFT[1], width: 3 },
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: '<b>%{x}</b><br>%{name}: %{y}<extra></extra>'
+            };
+            const commentsTrace = {
+                x: Object.keys(temporalData),
+                y: Object.values(temporalData).map(d => (d.sentimentos['Positivo'] || 0) + (d.sentimentos['Neutro'] || 0) + (d.sentimentos['Negativo'] || 0)),
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Com Comentário',
+                line: { shape: 'spline', color: PALETA_CORES_SWIFT[0], width: 3 },
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: '<b>%{x}</b><br>%{name}: %{y}<extra></extra>'
+            };
+            Plotly.react('grafico-linha-volume', [totalTrace, commentsTrace], { ...PLOTLY_LAYOUT_BASE, title: {text: `Volume de Respostas (${groupBy === 'D' ? 'Dia' : groupBy === 'W' ? 'Semana' : 'Mês'})`, x: 0.5} }, PLOTLY_CONFIG);
+
+            
+            const npsPorLoja = data_all.reduce((acc, d) => { if(d.Centro) { if (!acc[d.Centro]) acc[d.Centro] = []; acc[d.Centro].push(d); } return acc; }, {});
             const lojas = Object.keys(npsPorLoja).sort();
             Plotly.react('grafico-coluna-nps-loja', [{ x: lojas, y: lojas.map(loja => calcularNPS(npsPorLoja[loja]).score), type: 'bar', hovertemplate: '<b>%{x}</b><br>NPS: %{y}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { title: 'NPS Score'}, xaxis: { automargin: true } }, PLOTLY_CONFIG);
 
-            const tracesSentimentoLoja = ORDER.Sentimento.map(s => ({ x: lojas, y: lojas.map(l => (npsPorLoja[l] || []).filter(d => d.sentimento_modelo === s).length), name: s, type: 'bar', marker: { color: COLOR_MAP.Sentimento[s] }, hovertemplate: '<b>%{x}</b><br>%{name}: %{y}<extra></extra>' }));
+            const sentimentoPorLoja = data.reduce((acc, d) => { if(d.Centro) { if (!acc[d.Centro]) acc[d.Centro] = []; acc[d.Centro].push(d); } return acc; }, {});
+            const lojasSentimento = Object.keys(sentimentoPorLoja).sort();
+            const tracesSentimentoLoja = ORDER.Sentimento.map(s => ({ 
+                x: lojasSentimento, 
+                y: lojasSentimento.map(l => (sentimentoPorLoja[l] || []).filter(d => d.sentimento_modelo === s).length), 
+                name: s, 
+                type: 'bar', 
+                marker: { color: COLOR_MAP.Sentimento[s] }, 
+                // REQ 3: Corrigido o hovertemplate para usar %{name}
+                hovertemplate: '<b>%{x}</b><br>Sentimento: %{name}<br>Contagem: %{y}<extra></extra>' 
+            }));
             Plotly.react('sentimento-por-loja', tracesSentimentoLoja, { ...PLOTLY_LAYOUT_BASE, barmode: 'stack', xaxis: { automargin: true }, yaxis: { title: 'Contagem'} }, PLOTLY_CONFIG);
         }
         
-        function plotarAba3(data) {
+        // REQ 4: Nova função de agregação
+        function aggregateTopicsTemporally(data, groupBy, topicsList) {
+            const getGroupKey = (date) => {
+                if (!(date instanceof Date) || isNaN(date)) return null;
+                const d = new Date(date);
+                if (groupBy === 'M') return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                if (groupBy === 'W') { const firstDay = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay()); return `${firstDay.getFullYear()}-${String(firstDay.getMonth() + 1).padStart(2, '0')}-${String(firstDay.getDate()).padStart(2, '0')}`; }
+                return d.toISOString().split('T')[0];
+            };
+            const grouped = data.reduce((acc, row) => {
+                const key = getGroupKey(row.Data);
+                if (key) { if (!acc[key]) acc[key] = []; acc[key].push(row); }
+                return acc;
+            }, {});
+            
+            const result = {};
+            Object.keys(grouped).sort().forEach(key => {
+                const groupData = grouped[key];
+                const topicCounts = topicsList.reduce((acc, topic) => { acc[topic] = 0; return acc; }, {});
+                groupData.forEach(row => {
+                    if (topicsList.includes(row.topico_modelo)) {
+                        topicCounts[row.topico_modelo]++;
+                    }
+                });
+                result[key] = topicCounts;
+            });
+            return result;
+        }
+        
+        function plotarAba3(data, data_all) {
             const countBy = (arr, key) => arr.reduce((acc, item) => { if(item[key] && item[key] !=='Nenhum') acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
             const topicosCounts = countBy(data, 'topico_modelo');
             const sortedTopicos = Object.entries(topicosCounts).sort(([,a],[,b]) => a - b);
+            
             document.getElementById('kpi-top-topic').textContent = sortedTopicos.length > 0 ? sortedTopicos[sortedTopicos.length - 1][0] : '-';
-            Plotly.react('bar-topicos', [{ y: sortedTopicos.slice(-15).map(d => d[0]), x: sortedTopicos.slice(-15).map(d => d[1]), type: 'bar', orientation: 'h', marker: { color: PALETA_CORES_SWIFT[0] }, hovertemplate: '<b>%{y}</b><br>Contagem: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true } }, PLOTLY_CONFIG);
+            
+            const top15Topicos = sortedTopicos.slice(-15);
+            Plotly.react('bar-topicos', [{ y: top15Topicos.map(d => d[0]), x: top15Topicos.map(d => d[1]), type: 'bar', orientation: 'h', marker: { color: PALETA_CORES_SWIFT[0] }, hovertemplate: '<b>%{y}</b><br>Contagem: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true } }, PLOTLY_CONFIG);
+
+            
+            const topicosList = top15Topicos.map(d => d[0]); 
+            
+            const tracesClassif = ORDER.Classificacao.map(classif => ({
+                x: topicosList,
+                y: topicosList.map(topico => data.filter(d => d.topico_modelo === topico && d.classificacao === classif).length),
+                name: classif,
+                type: 'bar',
+                marker: { color: COLOR_MAP.Classificacao[classif] },
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: '<b>Tópico: %{x}</b><br>Classif.: %{name}<br>Contagem: %{y}<extra></extra>'
+            }));
+            Plotly.react('grafico-stacked-topicos-classificacao', tracesClassif, { ...PLOTLY_LAYOUT_BASE, barmode: 'stack', yaxis: { title: 'Contagem' }, xaxis: { automargin: true, tickangle: -45 } }, PLOTLY_CONFIG);
+            
+            const tracesSentim = ORDER.Sentimento.map(sentim => ({
+                x: topicosList,
+                y: topicosList.map(topico => data.filter(d => d.topico_modelo === topico && d.sentimento_modelo === sentim).length),
+                name: sentim,
+                type: 'bar',
+                marker: { color: COLOR_MAP.Sentimento[sentim] },
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: '<b>Tópico: %{x}</b><br>Sentim.: %{name}<br>Contagem: %{y}<extra></extra>'
+            }));
+            Plotly.react('grafico-stacked-topicos-sentimento', tracesSentim, { ...PLOTLY_LAYOUT_BASE, barmode: 'stack', yaxis: { title: 'Contagem' }, xaxis: { automargin: true, tickangle: -45 } }, PLOTLY_CONFIG);
 
             const sortedTopicosPos = Object.entries(countBy(data.filter(d => d.sentimento_modelo === 'Positivo'), 'topico_modelo')).sort(([,a],[,b]) => a - b).slice(-5);
             Plotly.react('top-topicos-positivos', [{ y: sortedTopicosPos.map(d => d[0]), x: sortedTopicosPos.map(d => d[1]), type: 'bar', orientation: 'h', marker: { color: COLOR_MAP.Sentimento.Positivo }, hovertemplate: '<b>%{y}</b><br>Contagem: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true } }, PLOTLY_CONFIG);
 
             const sortedTopicosNeg = Object.entries(countBy(data.filter(d => d.sentimento_modelo === 'Negativo'), 'topico_modelo')).sort(([,a],[,b]) => a - b).slice(-5);
             Plotly.react('top-topicos-negativos', [{ y: sortedTopicosNeg.map(d => d[0]), x: sortedTopicosNeg.map(d => d[1]), type: 'bar', orientation: 'h', marker: { color: COLOR_MAP.Sentimento.Negativo }, hovertemplate: '<b>%{y}</b><br>Contagem: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true } }, PLOTLY_CONFIG);
+            
+            // --- Lógica para Gráfico de Evolução Temporal de Tópicos (REQ 4) ---
+    
+            // 1. Popular filtro (preservando valor selecionado)
+            const filtroExtra = document.getElementById('filtro-topico-extra');
+            const currentValue = filtroExtra.value;
+            const allTopicos = Object.keys(topicosCounts).sort(); // topicosCounts foi calculado no início da função
+            filtroExtra.innerHTML = '<option value="">-- Nenhum Tópico Extra --</option>';
+            allTopicos.forEach(topic => {
+                const opt = document.createElement('option');
+                opt.value = topic;
+                opt.textContent = topic;
+                if (topic === currentValue) opt.selected = true;
+                filtroExtra.appendChild(opt);
+            });
+            
+            // 2. Adicionar listener se não existir
+            if (!filtroExtra.listenerAdded) {
+                filtroExtra.addEventListener('change', updateDashboard);
+                filtroExtra.listenerAdded = true;
+            }
+
+            // 3. Definir tópicos a plotar
+            const top5Topics = Object.entries(topicosCounts).sort(([,a],[,b]) => b - a).slice(0, 5).map(d => d[0]);
+            let topicsToPlot = [...top5Topics];
+            if (currentValue && !topicsToPlot.includes(currentValue)) {
+                topicsToPlot.push(currentValue);
+            }
+            
+            // 4. Agregar dados
+            const groupBy = document.getElementById('seletor-agrupamento-temporal').value;
+            const temporalTopicData = aggregateTopicsTemporally(data, groupBy, topicsToPlot);
+
+            // 5. Criar traces
+            const timeKeys = Object.keys(temporalTopicData);
+            const topicTraces = topicsToPlot.map((topic, i) => ({
+                x: timeKeys,
+                y: timeKeys.map(key => temporalTopicData[key][topic] || 0),
+                name: topic,
+                type: 'scatter', 
+                mode: 'lines+markers', 
+                line: { 
+                    shape: 'spline', 
+                    color: i < 5 ? (PALETA_CORES_SWIFT[i % PALETA_CORES_SWIFT.length]) : '#808080'
+                },
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: '<b>%{x}</b><br>Tópico: %{name}<br>Contagem: %{y}<extra></extra>'
+            }));
+
+            // 6. Plotar
+            Plotly.react('grafico-linha-topicos', topicTraces, { 
+                ...PLOTLY_LAYOUT_BASE, 
+                title: {text: `Evolução dos Top 5 Tópicos ${currentValue ? '+ 1 Extra' : ''}`, x: 0.5, xanchor: 'center'},
+                yaxis: { title: 'Contagem' }
+            }, PLOTLY_CONFIG);
         }
 
-       function plotarAba4(data_bigrams) {
+       // REQ 2: Função da Aba 4 completamente reescrita
+       function plotarAba4(data_bigrams, data_bigrams_sentimento) {
             const metric = document.querySelector('#bigram-toggle .active')?.dataset.metric || 'Frequencia';
             const metricLabel = metric === 'Frequencia' ? 'Frequência' : 'Score TF-IDF';
             const hoverFormat = metric === 'Frequencia' ? '%{x}' : '%{x:.2f}';
 
+            // --- Seção 1: Análise por Classificação (data_bigrams) ---
+            
             const plotTopBigramsByMetric = (classificacao, elementId) => {
                 const filtered = data_bigrams.filter(d => d.Classificacao === classificacao);
                 const sorted = filtered.sort((a,b) => b[metric] - a[metric]).slice(0, 10);
-                Plotly.react(elementId, [{ y: sorted.map(d=>d.Bigrama).reverse(), x: sorted.map(d=>d[metric]).reverse(), type: 'bar', orientation: 'h', marker: { color: COLOR_MAP.Classificacao[classificacao] }, hovertemplate: `<b>%{y}</b><br>${metricLabel}: ${hoverFormat}<extra></extra>` }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis:{title: metricLabel} }, PLOTLY_CONFIG);
+                
+                const layout = { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis:{title: metricLabel} };
+                layout.margin = { t: 10, b: 40, l: 60, r: 20 }; // Layout mais compacto para sub-gráficos
+                layout.title = null;
+                
+                Plotly.react(elementId, [{ 
+                    y: sorted.map(d=>d.Bigrama).reverse(), 
+                    x: sorted.map(d=>d[metric]).reverse(), 
+                    type: 'bar', 
+                    orientation: 'h', 
+                    marker: { color: COLOR_MAP.Classificacao[classificacao] }, 
+                    // REQ 3: Garantir hovertemplate explícito
+                    hovertemplate: `<b>%{y}</b><br>${metricLabel}: ${hoverFormat}<extra></extra>` 
+                }], layout, PLOTLY_CONFIG);
             };
 
             plotTopBigramsByMetric('promotor', 'bigramas-promotores');
             plotTopBigramsByMetric('neutro', 'bigramas-neutros');
             plotTopBigramsByMetric('detrator', 'bigramas-detratores');
             
+            // KPI (usa data_bigrams)
             document.getElementById('kpi-top-bigram').textContent = data_bigrams.length > 0 ? [...data_bigrams].sort((a,b) => b.Frequencia - a.Frequencia)[0].Bigrama : '-';
             
+            // Gráfico de Score (usa data_bigrams)
             const cardHeader = document.querySelector('#bigramas-por-score-card .card-header h3');
-
             if (metric === 'Frequencia') {
-                cardHeader.innerHTML = `<i class="fas fa-sort-amount-up"></i>Top 15 Bigramas por Frequência`;
+                cardHeader.innerHTML = `<i class="fas fa-sort-amount-up"></i>Top 15 Bigramas por Frequência (Classificação)`;
                 const sortedByFreq = [...data_bigrams].sort((a, b) => b.Frequencia - a.Frequencia).slice(0, 15);
                 Plotly.react('bigramas-por-score', [{ y: sortedByFreq.map(d => d.Bigrama).reverse(), x: sortedByFreq.map(d => d.Frequencia).reverse(), type: 'bar', orientation: 'h', marker: { color: PALETA_CORES_SWIFT[1] }, hovertemplate: '<b>%{y}</b><br>Freq: %{x}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis: { title: 'Frequência' } }, PLOTLY_CONFIG);
             } else { // Score_TFIDF
-                cardHeader.innerHTML = `<i class="fas fa-arrows-up-down"></i>Bigramas por Score de Impacto`;
+                cardHeader.innerHTML = `<i class="fas fa-arrows-up-down"></i>Bigramas por Score de Impacto (Classificação)`;
                 const sortedByScore = [...data_bigrams].sort((a,b) => b.Score_TFIDF - a.Score_TFIDF);
                 const top5 = sortedByScore.slice(0, 5);
                 const bottom5 = sortedByScore.slice(-5);
                 const combined = [...top5, ...bottom5].sort((a,b) => b.Score_TFIDF - a.Score_TFIDF);
-                Plotly.react('bigramas-por-score', [{ y: combined.map(d=>d.Bigrama), x: combined.map(d=>d.Score_TFIDF), type: 'bar', orientation: 'h', marker: { color: combined.map(d => d.Score_TFIDF > 0 ? COLOR_MAP.Sentimento.Positivo : COLOR_MAP.Sentimento.Negativo) }, hovertemplate: '<b>%{y}</b><br>Score: %{x:.2f}<extra></extra>' }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis: { title: 'Score TF-IDF Médio' } }, PLOTLY_CONFIG);
+                
+                Plotly.react('bigramas-por-score', [{ 
+                    y: combined.map(d=>d.Bigrama).reverse(), 
+                    x: combined.map(d=>d.Score_TFIDF).reverse(), 
+                    type: 'bar', 
+                    orientation: 'h', 
+                    marker: { 
+                        color: combined.map(d => d.Score_TFIDF > 0 ? COLOR_MAP.Sentimento.Positivo : COLOR_MAP.Sentimento.Negativo).reverse() 
+                    }, 
+                    hovertemplate: '<b>%{y}</b><br>Score: %{x:.2f}<extra></extra>' 
+                }], { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis: { title: 'Score TF-IDF Médio' } }, PLOTLY_CONFIG);
             }
+
+            // --- Seção 2: Análise por Sentimento e Categoria (data_bigrams_sentimento) ---
+
+            // 1. Popular filtro de Categoria
+            const filtroCat = document.getElementById('filtro-categoria-bigrama');
+            const currentCatValue = filtroCat.value;
+            const allCategorias = [...new Set(data_bigrams_sentimento.map(d => d.Categoria))].filter(Boolean).sort();
+            filtroCat.innerHTML = '<option value="">-- Todas Categorias --</option>';
+            allCategorias.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                if (cat === currentCatValue) opt.selected = true;
+                filtroCat.appendChild(opt);
+            });
+
+            // 2. Adicionar listener se não existir
+            if (!filtroCat.listenerAdded) {
+                filtroCat.addEventListener('change', updateDashboard);
+                filtroCat.listenerAdded = true;
+            }
+
+            // 3. Plotar Top 10 por Sentimento
+            const plotTopBigramsBySentimento = (sentimento, elementId) => {
+                // Aplicar filtro de Categoria selecionada
+                const dataFiltrada = currentCatValue ? data_bigrams_sentimento.filter(d => d.Categoria === currentCatValue) : data_bigrams_sentimento;
+                
+                const filtered = dataFiltrada.filter(d => d.Sentimento === sentimento);
+                const sorted = filtered.sort((a,b) => b[metric] - a[metric]).slice(0, 10);
+                
+                const layout = { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis:{title: metricLabel} };
+                layout.margin = { t: 10, b: 40, l: 60, r: 20 }; // Layout compacto
+                layout.title = null;
+
+                Plotly.react(elementId, [{ 
+                    y: sorted.map(d=>d.Bigrama).reverse(), 
+                    x: sorted.map(d=>d[metric]).reverse(), 
+                    type: 'bar', 
+                    orientation: 'h', 
+                    marker: { color: COLOR_MAP.Sentimento[sentimento] }, 
+                    // REQ 3: Garantir hovertemplate explícito
+                    hovertemplate: `<b>%{y}</b><br>${metricLabel}: ${hoverFormat}<extra></extra>` 
+                }], layout, PLOTLY_CONFIG);
+            };
+            
+            plotTopBigramsBySentimento('Positivo', 'bigramas-sent-positivo');
+            plotTopBigramsBySentimento('Neutro', 'bigramas-sent-neutro');
+            plotTopBigramsBySentimento('Negativo', 'bigramas-sent-negativo');
+
+            // 4. Plotar Top 15 por Categoria
+            let dataCategoria;
+            if (currentCatValue) {
+                dataCategoria = data_bigrams_sentimento.filter(d => d.Categoria === currentCatValue);
+            } else {
+                dataCategoria = data_bigrams_sentimento; 
+            }
+            
+            // Agrupar por Bigrama para somar/mediar valores
+            let dataAggCategoria = [];
+            const grouped = dataCategoria.reduce((acc, d) => {
+                if (!acc[d.Bigrama]) {
+                    acc[d.Bigrama] = { Frequencia: 0, Score_TFIDF_Sum: 0, count: 0 };
+                }
+                acc[d.Bigrama].Frequencia += d.Frequencia;
+                acc[d.Bigrama].Score_TFIDF_Sum += d.Score_TFIDF;
+                acc[d.Bigrama].count += 1;
+                return acc;
+            }, {});
+            
+            dataAggCategoria = Object.keys(grouped).map(bigrama => ({
+                Bigrama: bigrama,
+                Frequencia: grouped[bigrama].Frequencia,
+                Score_TFIDF: grouped[bigrama].Score_TFIDF_Sum / grouped[bigrama].count // Média do Score
+            }));
+
+            const sortedCategoria = dataAggCategoria.sort((a,b) => b[metric] - a[metric]).slice(0, 15);
+            
+            const layoutCat = { ...PLOTLY_LAYOUT_BASE, yaxis: { automargin: true }, xaxis:{title: metricLabel} };
+            layoutCat.margin = { t: 10, b: 40, l: 60, r: 20 };
+            layoutCat.title = null;
+            
+            Plotly.react('bigramas-por-categoria', [{ 
+                y: sortedCategoria.map(d=>d.Bigrama).reverse(), 
+                x: sortedCategoria.map(d=>d[metric]).reverse(), 
+                type: 'bar', 
+                orientation: 'h', 
+                marker: { color: PALETA_CORES_SWIFT[2] }, 
+                // REQ 3: Garantir hovertemplate explícito
+                hovertemplate: `<b>%{y}</b><br>${metricLabel}: ${hoverFormat}<extra></extra>` 
+            }], layoutCat, PLOTLY_CONFIG);
         }
 
         function createTable(containerId, data, columns) {
@@ -1205,14 +1722,21 @@
         }
 
         function calcularNPS(data) {
-            const relevant = data.filter(d => d.classificacao === 'promotor' || d.classificacao === 'detrator');
-            if (relevant.length === 0) return { score: 0 };
-            const promotores = relevant.filter(d => d.classificacao === 'promotor').length;
-            const detratores = relevant.filter(d => d.classificacao === 'detrator').length;
-            return { score: Math.round(((promotores - detratores) / relevant.length) * 100) };
-        }
+            const promotores = data.filter(d => d.classificacao === 'promotor').length;
+            const detratores = data.filter(d => d.classificacao === 'detrator').length;
+            const neutros = data.filter(d => d.classificacao === 'neutro').length;
+            
+            const totalValido = promotores + detratores + neutros;
+            
+            if (totalValido === 0) {
+                return { score: 0, promotores: 0, detratores: 0, neutros: 0 };
+            }
+            
+            const score = ((promotores - detratores) / totalValido) * 100;
+            
+return { score: score, promotores, detratores, neutros };        }
         
-        function agregarDadosTemporais(data, groupBy) {
+        function agregarDadosTemporais(data, groupBy, aggregateCounts = false) {
             const getGroupKey = (date) => {
                 if (!(date instanceof Date) || isNaN(date)) return null;
                 const d = new Date(date);
@@ -1225,12 +1749,24 @@
                 if (key) { if (!acc[key]) acc[key] = []; acc[key].push(row); }
                 return acc;
             }, {});
+            
             const result = {};
             Object.keys(grouped).sort().forEach(key => {
                 const groupData = grouped[key];
+                
+                let classificacaoCounts = {};
+                let sentimentoCounts = {};
+
+                if (aggregateCounts) {
+                    classificacaoCounts = groupData.reduce((acc, d) => { if(d.classificacao) acc[d.classificacao] = (acc[d.classificacao] || 0) + 1; return acc; }, {});
+                    sentimentoCounts = groupData.reduce((acc, d) => { if(d.sentimento_modelo && d.sentimento_modelo !== 'Sem Comentário') acc[d.sentimento_modelo] = (acc[d.sentimento_modelo] || 0) + 1; return acc; }, {});
+                }
+
                 result[key] = {
-                    nps: calcularNPS(groupData).score, count: groupData.length,
-                    sentimentos: groupData.reduce((acc, d) => { if(d.sentimento_modelo) acc[d.sentimento_modelo] = (acc[d.sentimento_modelo] || 0) + 1; return acc; }, {})
+                    nps: calcularNPS(groupData).score,
+                    count: groupData.length,
+                    sentimentos: sentimentoCounts,
+                    classificacao: classificacaoCounts
                 };
             });
             return result;
@@ -1301,7 +1837,7 @@
             const messageText = chatInput.value.trim();
             if (messageText === '') return;
             
-            addMessageToChat('user', messageText); // Mostra o texto puro
+            addMessageToChat('user', messageText); 
             chatInput.value = '';
             
             conversationHistory.push({ role: 'user', content: messageText });
@@ -1322,8 +1858,6 @@
             if (role === 'assistant') iconClass = 'fas fa-robot';
             if (role === 'loading') iconClass = 'fas fa-spinner fa-spin';
 
-            // NOVO: Usa 'marked.parse' para converter Markdown em HTML
-            // Para o usuário, usamos o 'content' puro para evitar formatação
             const htmlContent = role === 'user' 
                 ? content.replace(/[&<>"']/g, (m) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'})[m])
                 : (role === 'loading' ? 'Analisando' : marked.parse(content));
@@ -1358,7 +1892,6 @@
                 const previewContent = document.getElementById('ia-summary-preview-content');
                 const snippet = lastMessage.content.substring(0, 150) + (lastMessage.content.length > 150 ? '...' : '');
                 
-                // NOVO: Usa 'marked.parse' aqui também
                 previewContent.innerHTML = marked.parse(snippet);
             } else {
                 summaryCard.classList.remove('has-convo');
@@ -1366,14 +1899,16 @@
         }
 
         function createInitialPrompt() {
-            const { filtered_main, filtered_bigrams } = filtrarDados(getCurrentFilters());
+            const { filtered_all_main, filtered_main, filtered_bigrams, filtered_bigrams_sentimento } = filtrarDados(getCurrentFilters());
             
+            const npsResult = calcularNPS(filtered_all_main);
             const kpis = {
+                totalAvaliacoes: filtered_all_main.length,
                 totalComentarios: filtered_main.length,
-                nps: calcularNPS(filtered_main).score,
-                promotores: filtered_main.filter(d => d.classificacao === 'promotor').length,
-                detratores: filtered_main.filter(d => d.classificacao === 'detrator').length,
-                neutros: filtered_main.filter(d => d.classificacao === 'neutro').length,
+                nps: npsResult.score,
+                promotores: npsResult.promotores,
+                detratores: npsResult.detratores,
+                neutros: npsResult.neutros,
                 sentimentoPositivo: filtered_main.filter(d => d.sentimento_modelo === 'Positivo').length,
                 sentimentoNegativo: filtered_main.filter(d => d.sentimento_modelo === 'Negativo').length,
             };
@@ -1381,8 +1916,11 @@
             const countBy = (arr, key) => arr.reduce((acc, item) => { if(item[key] && item[key] !=='Nenhum') acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
             const sortedTopicos = Object.entries(countBy(filtered_main, 'topico_modelo')).sort(([,a],[,b]) => b - a).slice(0, 5);
             
+            // REQ 2: Usar os dois dados de bigrama para o prompt
             const topPromoterBigrams = filtered_bigrams.filter(d => d.Classificacao === 'promotor').sort((a,b) => b.Frequencia - a.Frequencia).slice(0, 3).map(d => d.Bigrama).join(', ');
             const topDetractorBigrams = filtered_bigrams.filter(d => d.Classificacao === 'detrator').sort((a,b) => b.Frequencia - a.Frequencia).slice(0, 3).map(d => d.Bigrama).join(', ');
+            const topPositiveBigrams = filtered_bigrams_sentimento.filter(d => d.Sentimento === 'Positivo').sort((a,b) => b.Frequencia - a.Frequencia).slice(0, 3).map(d => d.Bigrama).join(', ');
+            const topNegativeBigrams = filtered_bigrams_sentimento.filter(d => d.Sentimento === 'Negativo').sort((a,b) => b.Frequencia - a.Frequencia).slice(0, 3).map(d => d.Bigrama).join(', ');
 
             const systemPrompt = `Você é 'Swift Analytics IA', um assistente especialista em análise de dados e NPS. Sua resposta deve ser em português do Brasil, em tom profissional, mas amigável e direto. Use **Markdown** para formatar (negrito, listas, tabelas). Separe bem os parágrafos com quebras de linha duplas. Não invente dados.`;
 
@@ -1390,15 +1928,18 @@
             Aqui está um resumo dos dados de NPS filtrados atualmente:
             
             **KPIs Principais:**
-            - **Total de Comentários:** ${kpis.totalComentarios}
+            - **Total de Avaliações (com ou sem comentário):** ${kpis.totalAvaliacoes}
+            - **Total de Comentários (apenas válidos):** ${kpis.totalComentarios}
             - **NPS Score:** ${kpis.nps}
             - **Distribuição (Promotores/Neutros/Detratores):** ${kpis.promotores} / ${kpis.neutros} / ${kpis.detratores}
-            - **Sentimentos (Positivo/Negativo):** ${kpis.sentimentoPositivo} / ${kpis.sentimentoNegativo}
+            - **Sentimentos (Positivo/Negativo, de comentários):** ${kpis.sentimentoPositivo} / ${kpis.sentimentoNegativo}
             
-            **Tópicos e Termos Chave:**
-            - **Top 5 Tópicos:** ${sortedTopicos.map(t => `${t[0]} (${t[1]})`).join(', ')}
-            - **Principais Elogios (Bigramas):** ${topPromoterBigrams || 'N/A'}
-            - **Principais Reclamações (Bigramas):** ${topDetractorBigrams || 'N/A'}
+            **Tópicos e Termos Chave (de comentários):**
+            - **Top 5 Tópicos:** ${sortedTopicos.map(t => `${t[0]} (${t[1]})`).join(', ') || 'N/A'}
+            - **Principais Elogios (Bigramas Classif.):** ${topPromoterBigrams || 'N/A'}
+            - **Principais Reclamações (Bigramas Classif.):** ${topDetractorBigrams || 'N/A'}
+            - **Principais Elogios (Bigramas Sentim.):** ${topPositiveBigrams || 'N/A'}
+            - **Principais Reclamações (Bigramas Sentim.):** ${topNegativeBigrams || 'N/A'}
             
             Por favor, gere um "overview" (resumo executivo) com os principais insights desses dados. Seja breve (2-3 parágrafos) e foque no que é mais importante, separando bem os parágrafos.
             `;
@@ -1463,7 +2004,7 @@
             
             sidebarOverlay.addEventListener('click', closeSidebar);
             
-            document.querySelectorAll('.sidebar .filter-group select, .sidebar .filter-group input, #reset-filters').forEach(el => {
+            document.querySelectorAll('.sidebar .filter-group input, #reset-filters, .sidebar .filter-group select:not([multiple])').forEach(el => {
                 el.addEventListener('change', () => {
                     if (window.innerWidth <= 768) {
                         closeSidebar();
