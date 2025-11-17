@@ -10,11 +10,20 @@ Este notebook de Google Colab foi projetado para automatizar a análise de comen
 4.  **Analisa** a frequência e importância de bigramas (termos com duas palavras) usando TF-IDF.
 5.  **Salva** os resultados (gráficos e arquivos CSV) localmente no ambiente do Colab.
 
+## 📊 Visualização Web (Dashboard)
+
+Os dados processados por este script podem ser usados para alimentar um dashboard interativo.
+
+Uma visualização web do projeto, contendo vários gráficos e filtros dinâmicos, está disponível em:
+
+**[https://swiftnps.vercel.app](https://swiftnps.vercel.app)**
+
+
 ## 📋 Pré-requisitos
 
 * Uma conta Google.
 * O notebook deve ser executado no ambiente **Google Colab**.
-* Para melhor performance, ative o acelerador de **GPU** (Ambiente de Execução -> Alterar tipo de ambiente de execution -> T4 GPU).
+* Para melhor performance, ative o acelerador de **GPU** (Ambiente de Execução -> Alterar tipo de ambiente de execução -> T4 GPU).
 
 ## ⚙️ Como Usar (Passo a Passo)
 
@@ -29,7 +38,6 @@ Esta é a etapa mais importante. O script não funcionará se não encontrar o a
 **Como fazer o upload no Google Colab:**
 
 1.  No Google Colab, abra a barra lateral esquerda e clique no ícone de **Pasta** (Arquivos).
-    
 2.  Arraste o seu arquivo `NPS-Comentarios-2024-Louveira_VilaAndrade.xlsx` do seu computador e solte diretamente nessa área de "Arquivos".
 3.  Aguarde o upload ser concluído. Você deve ver o nome do arquivo listado na barra lateral.
 
@@ -53,7 +61,7 @@ Execute as células do notebook na seguinte ordem:
 
 ## 📤 Resultados (Outputs)
 
-Ao final da execução da Célula 4, você encontrará os seguintes arquivos salvos no painel "Arquivos" do Colab:
+Ao final da execução da Célula 4, você encontrará os seguintes arquivos salvos no painel "Arquivos" do Colab (você pode baixá-los clicando com o botão direito):
 
 * **Arquivos CSV (Resultados Principais):**
     * `NPS_Classificacao_Completa.csv`: O banco de dados original com as colunas de sentimento e tópico.
