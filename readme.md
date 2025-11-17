@@ -18,7 +18,7 @@ Uma visualização web do projeto, contendo vários gráficos e filtros dinâmic
 
 **[https://swiftnps.vercel.app](https://swiftnps.vercel.app)**
 
-![SWIFTAnalytics Dashboard](<img src="dashboard.png">)
+![SWIFTAnalytics Dashboard](assets/dashboard.png)
 
 ## 👨‍💻 Criadores
 
