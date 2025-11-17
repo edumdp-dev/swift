@@ -18,6 +18,13 @@ Uma visualização web do projeto, contendo vários gráficos e filtros dinâmic
 
 **[https://swiftnps.vercel.app](https://swiftnps.vercel.app)**
 
+![SWIFTAnalytics Dashboard](assets/image_294ae6.png)
+
+## 👨‍💻 Criadores
+
+| Eduardo | Fujita |
+| :---: | :---: |
+| <img src="assets/eduardo.jpg" width="150" alt="Foto do Eduardo"> | <img src="assets/fujita.jpg" width="150" alt="Foto do Fujita"> |
 
 ## 📋 Pré-requisitos
 
