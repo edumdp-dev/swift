@@ -1,6 +1,6 @@
 # 🚀 SwiftNPS: Análise de Sentimentos e Tópicos (NPS)
 
-Este notebook automatiza a análise de comentários de NPS, transformando feedbacks qualitativos em dados estruturados usando um modelo de IA com **80% de acurácia** na classificação de sentimentos.
+Este notebook automatiza a análise de comentários de NPS, transformando feedbacks qualitativos em dados estruturados usando modelos de IA com **80% de acurácia** na classificação de sentimentos.
 
 ### 👨‍💻 Criadores
 
@@ -8,11 +8,22 @@ Este notebook automatiza a análise de comentários de NPS, transformando feedba
 | :---: | :---: |
 | <img src="assets/eduardo.jpg" width="150" alt="Foto do Eduardo"> | <img src="assets/fujita.jpg" width="150" alt="Foto do Fujita"> |
 
+### 🧠 Modelos de IA Utilizados
+
+* **Sentimento:** `pysentimiento/bertweet-pt-sentiment`
+    * **Descrição:** Um modelo BERT (Bertweet) focado em português brasileiro, otimizado para classificar a polaridade (positiva, negativa, neutra) de textos curtos.
+* **Tópicos (Zero-Shot):** `joeddav/xlm-roberta-large-xnli`
+    * **Descrição:** Um modelo RoBERTa multi-idioma (XLM-R) que classifica textos em tópicos customizados (ex: "Preço", "Entrega"), mesmo sem ter sido treinado especificamente neles.
+
+---
+
 ![Google Colab](https://img.shields.io/badge/Google_Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white)
+![Hugging Face](https://img.shields.io/badge/Hugging%20Face-%F0%9F%A4%97-FFD21E?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![spaCy](https://img.shields.io/badge/spaCy-0099FF?style=for-the-badge&logo=spacy&logoColor=white)
 ![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
 ![Scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)
 
 ---
 
@@ -20,7 +31,7 @@ Este notebook automatiza a análise de comentários de NPS, transformando feedba
 
 * **📈 Classificação de Sentimento:** Classifica automaticamente cada comentário como Positivo, Neutro ou Negativo.
 * **🏷️ Modelagem de Tópicos:** Identifica e rotula o assunto principal de cada feedback (ex: Preço, Entrega, Atendimento, Produto, etc.).
-* **🔎 Análise de Termos (TF-IDF):** Extrai e ranqueia a importância de bigramas (termos com duas palavras) para identificar os pontos mais críticos por sentimento e tópico.
+* **🔎 Análise de Termos (TF-IDF):** Extrai e ranqueia a importância de bigramas (termos com duas palavras) para identificar os pontos mais críticos.
 * **🗂️ Exportação Automática:** Salva todos os resultados em arquivos `.csv` e gera gráficos `.png` para análise posterior.
 
 ## 📊 Dashboard Interativo
@@ -39,7 +50,7 @@ Acesse a visualização web do projeto em:
 * **Pandas** (Manipulação de dados)
 * **Spacy** (Pré-processamento e lematização)
 * **Scikit-learn (TfidfVectorizer)** (Análise de frequência de termos)
-* **Transformers (Hugging Face)** (Modelo de IA para classificação)
+* **Transformers (Hugging Face)** (Modelos de IA para classificação)
 * **Plotly** (Geração de gráficos)
 
 ## 📋 Pré-requisitos
@@ -63,7 +74,7 @@ Siga estas etapas na ordem correta para garantir que o script funcione.
 
 Esta é a etapa mais importante. O script procura por um nome de arquivo específico.
 
-* **Nome do Arquivo Esperado:** `NPS-Comentarios-2024-Louveira_VilaAndrade.xlsx`
+* **Nome do Arquivo Esperado:** `NPS-Comentarios-2024-Louveira_VilaAndra.xlsx`
 
 **Como fazer o upload:**
 
